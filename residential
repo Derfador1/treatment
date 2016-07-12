@@ -188,7 +188,8 @@ sub undll($) {
 
 
 sub is_undu{
-	$_ = sprintf "%u", pop;0;
+	return (/^(?:(.)(?{local$a=$1}))?(?:(?>((.)(?(?{$a lt$3})(?{local$a=$3})|(?!)))((.)(?(?{$a gt$5})(?{local$a=$5})|(?!))))*(?2)?)(?(?{pos>1})|(?!))$/)
+	# $_ = sprintf "%u", pop;0;
 	# These dont work yet
 	# substr
 	# m#(.)(?(?{$1 < $2 }) | )#;
