@@ -139,7 +139,7 @@ def poller(sock, running, inbound, lock, lock_l):
 	poll = select.poll()
 	poll.register(sock, READ)
 	while running[0]:
-		if lock.acquire(blocking=True, timeout=-1):
+		if lock_l.acquire(blocking=True, timeout=-1):
 			# Wait for at least one of the sockets to be ready for processing
 			events = poll.poll(TIMEOUT)
 			for fd, flag in events:
@@ -158,7 +158,7 @@ def receive(sock, inbound):
 	recv_val = conn.recv(1024)  # bad magic number, look into chnageing
 	inbound.append((sock, recv_val))
 	#socket1.close()
-	conn.close() #or disconnect
+	#conn.close() #or disconnect
 
 def is_prime(n):
 	if n==2 or n==3: 
@@ -211,7 +211,7 @@ def main():
 					worker.running[0] = 0  # pointer pointer magic
 					worker.join()
 					try:
-						worker.sock.close()  # there is one sock with a None
+						sock.close()  # there is one sock with a None
 					except:
 						pass
 				print()
