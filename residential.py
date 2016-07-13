@@ -211,7 +211,7 @@ def main():
 					worker.running[0] = 0  # pointer pointer magic
 					worker.join()
 					try:
-						sock.close()  # there is one sock with a None
+						worker.sock.close()  # there is one sock with a None
 					except:
 						pass
 				print()
