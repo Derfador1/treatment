@@ -21,15 +21,16 @@ class Header:
 	
 #Found scrypt methods at https://pypi.python.org/pypi/scrypt/		
 def sludger(data):
-	data = str(data)
-	salt  = "I Hate Liam Echlin"
-	h1 = scrypt.hash(data, salt, N = 2048, r = 4, p = 4)
-	header = Header(2, 8 + len(h1), 0)
-	outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	outgoing.connect(("localhost", 1234))
-	outgoing.send(header.serialize())
-	outgoing.send(h1)
-	outgoing.close()
+	if data:
+		data = str(data)
+		salt  = "I Hate Liam Echlin"
+		h1 = scrypt.hash(data, salt, N = 2048, r = 4, p = 4)
+		header = Header(2, 8 + len(h1), 0)
+		outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		outgoing.connect(("localhost", 1234))
+		outgoing.send(header.serialize())
+		outgoing.send(h1)
+		outgoing.close()
 	
 def worker():
 	while True:
