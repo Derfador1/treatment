@@ -49,7 +49,7 @@ def molecules(code):
 	pull = 8
 	(type, size, coustom) = struct.unpack("!HHL", code[:pull])
 	molecules = []
-	while pull + 8 < len(code):
+	while pull < len(code):
 		molecules.append(code[pull:pull+8])
 		pull += 8
 	return molecules
@@ -92,11 +92,11 @@ def parser(item):
 	p_l = functions["2"](mol)
 	if p_l:
 		mol = p_l
+	"""
 		
 	p_l = functions["3"](mol)
 	if p_l:
-		temp_l = p_l
-	"""
+		mol = p_l
 		
 	p_l = functions["4"](mol, sludge_outgoing)
 	if p_l:
@@ -162,8 +162,109 @@ def debris(p_list):
 def mercury(mol):
 	pass
 
-def selenium(mol):
-	pass
+def selenium(p_list):
+	lenlen = len(p_list)
+	dll = [('')]
+	s_child = 0
+	for mol in p_list:
+		(data, left, right) = struct.unpack("!LHH", mol)
+		if left == 0 and right == 0:
+			continue
+		dll.append((left, right, data))
+	l = 0
+	r = 0
+	m_dict = {}
+	for i in range(1, len(dll)):
+		m_dict[i] = (dll[i][0], dll[i][1], dll[i][2])
+	# checking for dbl circle
+	chain = 0
+	dbl = 0
+	for i in m_dict:
+		if m_dict[i][0] == 0 and m_dict[i][1] or m_dict[i][1] == 0 and m_dict[i][0] or m_dict[i][0] == m_dict[i][1]:
+			if dbl:
+				return 0  # this cannot be selenium
+			chain = 1
+		else:
+			if chain:
+				return 0  # this cannot be selenium
+			dbl = 1
+	
+	if chain:
+		p_list = clean_chain(dll)
+		return p_list
+	else:
+		print(dll)
+		p_list = clean_dbl(m_dict)
+		return p_list		
+
+	
+def clean_dbl(dll):
+	big = 0
+	ret_list = []
+	last = 0
+	for i in dll:
+		if big < dll[i][2]:
+			big = dll[i][2]
+			trash = i
+	for i in dll:
+		if not last:
+			last = i
+		print(last)
+		if i in dll[dll[i][0]] and i in dll[dll[i][1]]:
+			pass
+		else:
+			return 0
+		if i == trash:
+			ret_list.append((dll[i][0], dll[i][1], 0))
+		elif trash == dll[i][0]:
+			if last == dll[i][1]:
+				ret_list.append((0, 0, dll[i][2]))
+			else:
+				ret_list.append((0, dll[i][1], dll[i][2]))
+		elif trash == dll[i][1]:
+			if last == dll[i][0]:
+				ret_list.append((0, 0, dll[i][2]))
+			else:
+				ret_list.append((dll[i][0], 0, dll[i][2]))
+		else:
+			if i in [dll[i][0]]:
+				ret_list.append((dll[i][0], 0, dll[i][2]))
+			else:
+				ret_list.append((dll[i][1], 0, dll[i][2]))
+		last = i
+	#waste(dll[trash][2])
+	send_list = []
+	for item in ret_list:
+		send_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
+	return send_list
+
+def clean_chain(dll):
+	last = 0
+	big = 0
+	for i in range(1, len(dll)):
+		if dll[i][2] > big:
+			big = dll[i][2]
+			trash = i
+	ret_list = []
+	for i in range(1, len(dll)):
+		print(i, trash, dll[i])
+		if i == trash:
+			ret_list.append((dll[i][0], dll[i][1], 0))
+		elif trash == dll[i][0]:
+			if trash == dll[i][1]:
+				ret_list.append((0, 0, dll[i][2]))
+			else:
+				ret_list.append((0, dll[i][1], dll[i][2]))
+		elif trash == dll[i][1]:
+			ret_list.append((dll[i][0], 0, dll[i][2]))
+		else:
+			ret_list.append(dll[i])
+
+	#waste(dll[trash][2])
+	send_list = []
+	for item in ret_list:
+		send_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
+	return send_list
 
 #Found scrypt methods at https://pypi.python.org/pypi/scrypt/
 def sludger(data):
