@@ -1,0 +1,78 @@
+#!/usr/bin/ python3
+
+import os
+import socket
+import sys
+import struct
+import queue
+import scrypt
+import threading
+
+q = queue.Queue()
+
+class Header:
+	def __init__(self, type1, size, custom):
+		self.type1 = type1
+		self.size = size
+		self.custom = custom
+
+	def serialize(self):
+		return struct.pack("!HHL", self.type1, self.size, self.custom)
+	
+#Found scrypt methods at https://pypi.python.org/pypi/scrypt/		
+def sludger(data):
+	data = str(data)
+	salt  = "I Hate Liam Echlin"
+	h1 = scrypt.hash(data, salt, N = 2048, r = 4, p = 4)
+	header = Header(2, 8 + len(h1), 0)
+	outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	outgoing.connect(("localhost", 1234))
+	outgoing.send(header.serialize())
+	outgoing.send(h1)
+	outgoing.close()
+	
+def worker():
+	while True:
+		item = q.get()
+		if item is None:
+		    break
+		sludger(item)
+		q.task_done()
+
+def main():
+	num_worker_threads = 2	
+
+	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+	server.bind(('localhost', 40000))
+	
+	server.listen(num_worker_threads)
+	
+	threads = []
+	for i in range(num_worker_threads):
+		t = threading.Thread(target=worker)
+		t.start()
+		threads.append(t)
+	
+	recieved = []
+
+	while server:
+		conn, addr = server.accept()
+		if conn:
+			try:
+				conn.settimeout(5)
+				val = conn.recv(4096).decode('utf-8')
+				recieved.append(val)
+			except socket.timeout:
+				pass
+
+		for data in recieved:
+			q.put(data)
+			recieved.remove(data)
+	
+	
+	
+if __name__ == "__main__":
+	main()
