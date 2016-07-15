@@ -64,16 +64,18 @@ def worker():
 		q.task_done()
 
 def parser(item):
+	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sludge_outgoing.connect(("localhost", 40000))
+
 	functions = {"1": debris, "2": mercury, "3": selenium,
 	         "4": feces, "5": ammonia, "6": deaeration, "7": phosphates,
 			"8": chlorine}
 
 	mol = []
-
-	mol = molecules(item)
-
 	p_l = []
 	temp_l = []
+
+	mol = molecules(item)
 	
 	temp_l = mol
 	
@@ -86,8 +88,6 @@ def parser(item):
 		outgoing.send(b''.join(p_l))
 		outgoing.close()
 		return 0
-	
-	
 	"""
 	p_l = functions["2"](mol)
 	if p_l:
@@ -96,13 +96,21 @@ def parser(item):
 	p_l = functions["3"](mol)
 	if p_l:
 		temp_l = p_l
-	"""	
+	"""
 		
-	p_l = functions["4"](mol)
+	p_l = functions["4"](mol, sludge_outgoing)
 	if p_l:
 		mol = p_l
 
 	"""
+	p_l = functions["7"](mol)
+	if p_l:
+		mol = p_l
+
+	p_l = functions["8"](mol)
+	if p_l:
+		mol = p_l
+
 	elif i == '2':
 		pass
 	elif i == '3':
@@ -121,8 +129,7 @@ def parser(item):
 	else:
 		functions[i](mol)
 	"""
-
-	#print(p_l)
+	sludge_outgoing.close()
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
 def clean(p_list):
@@ -169,13 +176,14 @@ def sludger(data):
 	outgoing.send(h1)
 	outgoing.close()
 
-def feces(p_list):
+def feces(p_list, outgoing):
 	listo = []
 	poo = 0
 	for mol in p_list:
 		(data, left, right) = struct.unpack("!LHH", mol)
 		if is_prime(data):
-			sludger(str(data))
+			#sludger(str(data))
+			outgoing.send(bytes(str(data),'utf-8'))
 			data = 0
 			poo = 1
 		else:
@@ -196,8 +204,14 @@ def deaeration(mol):
 def phosphates(mol):
 	pass
 
-def chlorine(mol):
-	pass
+def chlorine(p_list):
+	for i in p_list:
+		(data, left, right) = struct.unpack("!LHH", mol)
+		if left == right and left:
+			right = 0
+			mol = struct.pack("!LHH", data, left, right)
+			return p_list
+	return 0
 
 #pulled from https://github.com/dsprimm/Final_capstone
 def main():
@@ -205,12 +219,11 @@ def main():
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-	server.bind(('localhost', 1112))
+	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
+	server.bind(('localhost', 1132))
+	
 	server.listen(num_worker_threads)
-
-	#i need to fix this
-	server.settimeout(5)
 
 	threads = []
 	for i in range(num_worker_threads):
@@ -222,20 +235,30 @@ def main():
 
 	while server:
 		#put check to make sure we have same number of threads we started with
-		try:
-			conn, addr = server.accept()
-			if conn:
+		"""
+		if len(threads) < num_worker_threads:
+			t = threading.Thread(target=worker)
+			t.start()
+			threads.append(t)
+		"""
+		
+		conn, addr = server.accept()
+		if conn:
+			try:
+				conn.settimeout(5)
 				val = conn.recv(1024)
-			recieved.append(val)
-		except socket.timeout:
-			pass
+				recieved.append(val)
+			except socket.timeout:
+				pass
 
 		for data in recieved:
 			q.put(data)
 			recieved.remove(data)
 	
-		if len(recieved) == 0:
-			break
+		#if len(recieved) == 0:
+		#	break
+			
+		#server.close()
 
 	# block until all tasks are done
 	q.join()
