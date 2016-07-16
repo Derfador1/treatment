@@ -45,7 +45,7 @@ def is_undulant(n):
 		       return False
 	return True
 
-def collider(packet):
+def molecules(packet):
 	# todo return multiple lists, one for each found structure
 		# with multiple structures pad empty space with junk air
 		# [LL, LL, LL, LL, 0, 0 SE, SE, SE] would be converted to
@@ -142,7 +142,7 @@ def parser(item):
 	p_l = []
 	temp_l = []
 
-	mol = collider(item)
+	mol = molecules(item)
 	
 	temp_l = mol
 
