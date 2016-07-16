@@ -146,11 +146,6 @@ def parser(item):
 	
 	temp_l = mol
 
-	#for loop
-	#for i in mol:
-	#	all each function
-	
-
 	for i in mol:
 		p_l = functions["1"](i)
 		if p_l:
@@ -168,7 +163,6 @@ def parser(item):
 		"""
 			
 		p_l = functions["3"](i)
-		#print(p_l)
 		if p_l:
 			#goes to waste functions
 			"""
@@ -204,24 +198,6 @@ def parser(item):
 		p_l = functions["8"](mol)
 		if p_l:
 			mol = p_l
-
-		elif i == '2':
-			pass
-		elif i == '3':
-			pass
-		elif i == '4':
-			p_l = functions[i](mol)
-			p_list = p_l
-		elif i == '5':
-			pass
-		elif i == '6':
-			pass
-		elif i == '7':
-			pass
-		elif i == '8':
-			pass
-		else:
-			functions[i](mol)
 		"""
 	sludge_outgoing.close()
 
@@ -377,6 +353,7 @@ def clean_chain(dll):
 	return send_list
 
 #Found scrypt methods at https://pypi.python.org/pypi/scrypt/
+"""
 def sludger(data):
 	salt  = "I Hate Liam Echlin"
 	h1 = scrypt.hash(data, salt, N = 2048, r = 4, p = 4)
@@ -386,6 +363,7 @@ def sludger(data):
 	outgoing.send(header.serialize())
 	outgoing.send(h1)
 	outgoing.close()
+"""
 
 def feces(p_list, outgoing):
 	listo = []
@@ -398,7 +376,6 @@ def feces(p_list, outgoing):
 		data = mol[2]
 		if is_prime(data):
 			#sludger(str(data))
-			#print(data, left, right)
 			outgoing.send(bytes(str(data),'utf-8'))
 			data = 0
 			poo = 1
