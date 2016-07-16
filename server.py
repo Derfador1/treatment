@@ -45,14 +45,80 @@ def is_undulant(n):
 		       return False
 	return True
 
-def molecules(code):
+def collider(packet):
+	# todo return multiple lists, one for each found structure
+		# with multiple structures pad empty space with junk air
+		# [LL, LL, LL, LL, 0, 0 SE, SE, SE] would be converted to
+		# [
+		# [LL, LL, LL, LL, 0, 0, 0, 0 ,0]
+		# [0, 0, 0, 0, 0, 0, SE, SE, SE]
+		# ]
 	pull = 8
-	(type, size, coustom) = struct.unpack("!HHL", code[:pull])
-	molecules = []
-	while pull < len(code):
-		molecules.append(code[pull:pull+8])
+	(type, size, custom) = struct.unpack("!HHL", packet[:pull])
+	molecules = [""]
+	while pull < len(packet):
+		(data, left, right) = struct.unpack("!LHH", packet[pull:pull+8])
+		molecules.append((left, right, data))
 		pull += 8
-	return molecules
+	
+	ret_list = generate_mols(molecules)
+	return ret_list
+	
+def rip(md, a):
+	i = 1
+	while True:
+		if i > len(a):
+			return
+		if i not in md.keys():
+			i += 1
+			continue
+		if md[i][0] not in md.keys():
+			try:
+				md[md[i][0]] = (a[md[i][0]][0], a[md[i][0]][1])
+			except:
+				pass
+		if md[i][1] not in md.keys():
+			try:
+				md[md[i][1]] = (a[md[i][1]][0], a[md[i][1]][1])
+			except:
+				pass
+		i += 1
+
+def generate_mols(molecules):
+	m_list = []
+	while True:
+		x = 1
+		md = {}
+		while True:
+			if x in m_list:
+				x += 1
+				continue
+			elif x + 1 > len(molecules):
+				break
+			if molecules[x][0] or molecules[x][1]:
+				md[x] = (molecules[x][0], molecules[x][1])
+				break
+			else:
+				x += 1
+		rip(md, molecules)
+		for i in md:
+			m_list.append(i)
+		m_list.append("")
+		if x + 1 > len(molecules):
+			break
+	ret_list = []
+	i_list = [(0,0,0) for x in range(len(molecules))]
+	added = 0
+	for i in m_list:
+		if i:
+			added = 1
+			i_list[i] = molecules[i]
+		else:
+			if added:
+				ret_list.append(i_list)
+				added = 0
+			i_list = [(0,0,0) for x in range(len(molecules))]
+	return ret_list
 
 #pulled from https://github.com/dsprimm/Final_capstone
 def worker():
@@ -69,66 +135,94 @@ def parser(item):
 
 	functions = {"1": debris, "2": mercury, "3": selenium,
 	         "4": feces, "5": ammonia, "6": deaeration, "7": phosphates,
-			"8": chlorine}
+			}
+	#"8": chlorine
 
 	mol = []
 	p_l = []
 	temp_l = []
 
-	mol = molecules(item)
+	mol = collider(item)
 	
 	temp_l = mol
+
+	#for loop
+	#for i in mol:
+	#	all each function
 	
-	p_l = functions["1"](mol)
-	if p_l:
-		header = Header(1, 8 + 8*len(p_l), 0)
-		outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		outgoing.connect(("localhost", 3333))
-		outgoing.send(header.serialize())
-		outgoing.send(b''.join(p_l))
-		outgoing.close()
-		return 0
-	"""
-	p_l = functions["2"](mol)
-	if p_l:
-		mol = p_l
-	"""
+
+	for i in mol:
+		p_l = functions["1"](i)
+		if p_l:
+			header = Header(1, 8 + 8*len(p_l), 0)
+			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			outgoing.connect(("localhost", 3333))
+			outgoing.send(header.serialize())
+			outgoing.send(b''.join(p_l))
+			outgoing.close()
+			return 0
+		"""
+		p_l = functions["2"](mol)
+		if p_l:
+			mol = p_l
+		"""
+			
+		p_l = functions["3"](i)
+		#print(p_l)
+		if p_l:
+			#goes to waste functions
+			"""
+			print("Here")
+			header = Header(1, 8 + 8*len(p_l), 0)
+			outgoing1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			outgoing1.connect(("localhost", 33356))
+			outgoing1.send(header.serialize())
+			data = b""
+			for i in p_l:
+				data += struct.pack("!LHH", i[2], i[0], i[1])
+			outgoing1.send(data)
+			outgoing1.close()
+			"""
+			i = p_l
+			
+		p_l = functions["4"](i, sludge_outgoing)
+		if p_l:
+			i = p_l
+
+		"""
+		p_l = functions["7"](mol)
+		print(p_l)
+		if p_l:
+			header = Header(1, 8 + 8*len(p_l), 0)
+			outgoing1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			outgoing1.connect(("localhost", 33355))
+			outgoing1.send(header.serialize())
+			outgoing1.send(b''.join(p_l))
+			outgoing1.close()
+			mol = p_l
 		
-	p_l = functions["3"](mol)
-	if p_l:
-		mol = p_l
-		
-	p_l = functions["4"](mol, sludge_outgoing)
-	if p_l:
-		mol = p_l
+		p_l = functions["8"](mol)
+		if p_l:
+			mol = p_l
 
-	"""
-	p_l = functions["7"](mol)
-	if p_l:
-		mol = p_l
-
-	p_l = functions["8"](mol)
-	if p_l:
-		mol = p_l
-
-	elif i == '2':
-		pass
-	elif i == '3':
-		pass
-	elif i == '4':
-		p_l = functions[i](mol)
-		p_list = p_l
-	elif i == '5':
-		pass
-	elif i == '6':
-		pass
-	elif i == '7':
-		pass
-	elif i == '8':
-		pass
-	else:
-		functions[i](mol)
-	"""
+		elif i == '2':
+			pass
+		elif i == '3':
+			pass
+		elif i == '4':
+			p_l = functions[i](mol)
+			p_list = p_l
+		elif i == '5':
+			pass
+		elif i == '6':
+			pass
+		elif i == '7':
+			pass
+		elif i == '8':
+			pass
+		else:
+			functions[i](mol)
+		"""
 	sludge_outgoing.close()
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
@@ -136,21 +230,27 @@ def clean(p_list):
 	lenlen = len(p_list)
 	ret_list = []
 	for mol in p_list:
-		(data, left, right) = struct.unpack("!LHH", mol)
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
+		#(data, left, right) = struct.unpack("!LHH", mol)
 		if not data:
 			continue
 		if left > lenlen:
 			left = 0xFFFF
 		if right > lenlen:
 			right = 0xFFFF
-		ret_list.append(struct.pack("!LHH", data, left, right))
+		ret_list.append((left, right, data))
 	return ret_list
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
 def debris(p_list):
 	lenlen = len(p_list)
 	for mol in p_list:
-		(data, left, right) = struct.unpack("!LHH", mol)
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
+		#(data, left, right) = struct.unpack("!LHH", mol)
 		if left > lenlen:
 			p_list = clean(p_list)
 			return p_list
@@ -167,7 +267,10 @@ def selenium(p_list):
 	dll = [('')]
 	s_child = 0
 	for mol in p_list:
-		(data, left, right) = struct.unpack("!LHH", mol)
+		#(data, left, right) = struct.unpack("!LHH", mol)
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
 		if left == 0 and right == 0:
 			continue
 		dll.append((left, right, data))
@@ -190,7 +293,7 @@ def selenium(p_list):
 			dbl = 1
 	
 	if chain:
-		p_list = clean_chain(dll)
+		p_list = clean_chain(m_dict)
 		return p_list
 	else:
 		print(dll)
@@ -235,18 +338,26 @@ def clean_dbl(dll):
 	#waste(dll[trash][2])
 	send_list = []
 	for item in ret_list:
-		send_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
+		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
 def clean_chain(dll):
 	last = 0
 	big = 0
-	for i in range(1, len(dll)):
-		if dll[i][2] > big:
-			big = dll[i][2]
-			trash = i
+	for i in dll:
+		if type(i) == int:
+			if dll[i][2] > big:
+				big = dll[i][2]
+				trash = i
 	ret_list = []
-	for i in range(1, len(dll)):
+	for i in dll:
+		if dll[i][0] == i:
+			if dll[i][1] not in dll.keys():
+				return 0
+		if dll[i][1] == i:
+			if dll[i][0] not in dll.keys():
+				return 0
+	for i in dll:
 		print(i, trash, dll[i])
 		if i == trash:
 			ret_list.append((dll[i][0], dll[i][1], 0))
@@ -259,11 +370,10 @@ def clean_chain(dll):
 			ret_list.append((dll[i][0], 0, dll[i][2]))
 		else:
 			ret_list.append(dll[i])
-
 	#waste(dll[trash][2])
 	send_list = []
 	for item in ret_list:
-		send_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
+		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
 #Found scrypt methods at https://pypi.python.org/pypi/scrypt/
@@ -281,15 +391,21 @@ def feces(p_list, outgoing):
 	listo = []
 	poo = 0
 	for mol in p_list:
-		(data, left, right) = struct.unpack("!LHH", mol)
+		#(data, left, right) = struct.unpack("!LHH", mol)
+		print(mol)
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
 		if is_prime(data):
 			#sludger(str(data))
+			#print(data, left, right)
 			outgoing.send(bytes(str(data),'utf-8'))
 			data = 0
 			poo = 1
 		else:
 			pass
-		listo.append(struct.pack("!LHH", data, left, right))	
+		#listo.append(struct.pack("!LHH", data, left, right))
+		listo.append((left, right, data))	
 
 	if poo:
 		return listo
@@ -302,9 +418,73 @@ def ammonia(mol):
 def deaeration(mol):
 	pass
 
-def phosphates(mol):
-	pass
-
+def phosphates(p_list):
+	lenlen = len(p_list)
+	dll = [('')]
+	s_child = 0
+	for mol in p_list:
+		#(data, left, right) = struct.unpack("!LHH", mol)
+		data = mol[0]
+		left = mol[1]
+		right = mol[2]
+		if left == 0 and right == 0:
+			continue
+		if left == 0 or right == 0:
+			s_child += 1
+		dll.append((left, right, data))
+	for i in range(1, len(dll)):
+		if dll[i][0]:
+			try:
+				if i not in dll[dll[i][0]] and dll[i][0] != dll[i][1]:
+					return 5  # this is not phosphates
+			except Exception:
+				pass
+		if dll[i][1]:
+			try:
+				if i not in dll[dll[i][1]] and dll[i][0] != dll[i][1]:
+					return 8  # this is not phosphates
+			except Exception:
+				pass
+	if s_child != 2:  # if there are not only 2 nodes with data and only 1 child
+		return 2  # this is not phosphates
+	p_list = clean_phosphates(dll)
+	return p_list
+	
+def clean_phosphates(dll):
+	ret_list = []
+	ends = []
+	for i in range(1, len(dll)):
+		if 0 == dll[i][0] or 0 == dll[i][1]:
+			ends.append(dll[i])
+	if ends[0][2] >= ends[1][2]:
+		# rewire all nodes to chain link, pointed to the head, ends[0] is the new head
+		head = ends[0]
+	else:
+		# rewire all nodes to chain link, pointed to the head, ends[1] is the new head
+		head = ends[1]
+	for i in range(1, len(dll)):
+		if head == dll[i]:
+			if head[0]:
+				dll[i] = (head[0], head[0], head[2])
+			else:
+				dll[i] = (head[1], head[1], head[2])
+			head = i
+			break
+	last = head
+	while head:
+		if dll[head][0] == 0 or dll[head][1] == 0:
+			dll[head] = (0, 0, dll[head][2])
+		elif dll[head][0] != last:
+			dll[head] = (dll[head][0], dll[head][0], dll[head][2])
+		else:
+			dll[head] = (dll[head][1], dll[head][1], dll[head][2])
+		last = head
+		head = dll[head][0]
+	dll.pop(0)
+	#for item in dll:
+	#	ret_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
+	return ret_list
+"""
 def chlorine(p_list):
 	for i in p_list:
 		(data, left, right) = struct.unpack("!LHH", mol)
@@ -313,6 +493,7 @@ def chlorine(p_list):
 			mol = struct.pack("!LHH", data, left, right)
 			return p_list
 	return 0
+"""
 
 #pulled from https://github.com/dsprimm/Final_capstone
 def main():
