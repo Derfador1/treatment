@@ -65,18 +65,43 @@ def main():
 	recieved = []
 
 	while server:
-		conn, addr = server.accept()
-		if conn:
+		try:
+			if len(threads) < num_worker_threads:
+				t = threading.Thread(target=worker)
+				t.start()
+				threads.append(t)
+				
 			try:
-				conn.settimeout(5)
-				val = conn.recv(4096).decode('utf-8')
-				recieved.append(val)
-			except socket.timeout:
-				pass
+				conn, addr = server.accept()
+			except Exception:
+				break
+				
+			if conn:
+				try:
+					conn.settimeout(5)
+					val = conn.recv(4096).decode('utf-8')
+					recieved.append(val)
+				except socket.timeout:
+					pass
 
-		for data in recieved:
-			q.put(data)
-			recieved.remove(data)
+			for data in recieved:
+				q.put(data)
+				recieved.remove(data)
+				
+			
+		except KeyboardInterrupt:
+			print("Caught")
+
+			# block until all tasks are done
+			q.join()
+
+			# stop workers
+			for i in range(num_worker_threads):
+				q.put(None)
+			for t in threads:
+				t.join()
+				
+			server.close()
 	
 	
 	
