@@ -22,8 +22,10 @@ class Header:
 		return struct.pack("!HHL", self.type1, self.size, self.custom)
 
 def is_prime(n):
-	if n==2 or n==3: return True
-	if n%2==0 or n<2: return False
+	if n==2 or n==3: 
+		return True
+	if n%2==0 or n<2: 
+		return False
 	for i in range(3,int(n**0.5)+1,2):   # only odd numbers
 		if n%i==0:
 			return False    
@@ -46,13 +48,6 @@ def is_undulant(n):
 	return True
 
 def molecules(packet):
-	# todo return multiple lists, one for each found structure
-		# with multiple structures pad empty space with junk air
-		# [LL, LL, LL, LL, 0, 0 SE, SE, SE] would be converted to
-		# [
-		# [LL, LL, LL, LL, 0, 0, 0, 0 ,0]
-		# [0, 0, 0, 0, 0, 0, SE, SE, SE]
-		# ]
 	pull = 8
 	(type, size, custom) = struct.unpack("!HHL", packet[:pull])
 	molecules = [""]
@@ -119,19 +114,19 @@ def generate_mols(molecules):
 				added = 0
 			i_list = [(0,0,0) for x in range(len(molecules))]
 	return ret_list
-
-#pulled from https://github.com/dsprimm/Final_capstone
+	
+#https://docs.python.org/3/library/queue.html
 def worker():
 	while True:
 		item = q.get()
 		if item is None:
-		    break
+			break
 		parser(item)
 		q.task_done()
 
 def parser(item):
 	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sludge_outgoing.connect(("localhost", 40000))
+	sludge_outgoing.connect(('localhost', 40000))
 
 	functions = {"1": debris, "2": mercury, "3": selenium,
 	         "4": feces, "5": ammonia, "6": deaeration, "7": phosphates,
@@ -140,14 +135,12 @@ def parser(item):
 
 	mol = []
 	p_l = []
-	temp_l = []
 
 	mol = molecules(item)
-	
-	temp_l = mol
 
 	for i in mol:
 		p_l = functions["1"](i)
+		#if p_l[0] == 1: check for trash flag
 		if p_l:
 			header = Header(1, 8 + 8*len(p_l), 0)
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -209,7 +202,6 @@ def clean(p_list):
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
-		#(data, left, right) = struct.unpack("!LHH", mol)
 		if not data:
 			continue
 		if left > lenlen:
@@ -226,7 +218,6 @@ def debris(p_list):
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
-		#(data, left, right) = struct.unpack("!LHH", mol)
 		if left > lenlen:
 			p_list = clean(p_list)
 			return p_list
@@ -239,11 +230,9 @@ def mercury(mol):
 	pass
 
 def selenium(p_list):
-	lenlen = len(p_list)
 	dll = [('')]
 	s_child = 0
 	for mol in p_list:
-		#(data, left, right) = struct.unpack("!LHH", mol)
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
@@ -255,7 +244,6 @@ def selenium(p_list):
 	m_dict = {}
 	for i in range(1, len(dll)):
 		m_dict[i] = (dll[i][0], dll[i][1], dll[i][2])
-	# checking for dbl circle
 	chain = 0
 	dbl = 0
 	for i in m_dict:
@@ -272,11 +260,9 @@ def selenium(p_list):
 		p_list = clean_chain(m_dict)
 		return p_list
 	else:
-		print(dll)
 		p_list = clean_dbl(m_dict)
 		return p_list		
 
-	
 def clean_dbl(dll):
 	big = 0
 	ret_list = []
@@ -311,7 +297,7 @@ def clean_dbl(dll):
 			else:
 				ret_list.append((dll[i][1], 0, dll[i][2]))
 		last = i
-	#waste(dll[trash][2])
+	#waste(dll[trash][2]) -> function to process waste
 	send_list = []
 	for item in ret_list:
 		send_list.append((item[0], item[1], item[2]))
@@ -346,46 +332,29 @@ def clean_chain(dll):
 			ret_list.append((dll[i][0], 0, dll[i][2]))
 		else:
 			ret_list.append(dll[i])
-	#waste(dll[trash][2])
+	#waste(dll[trash][2]) -> function to process waste
 	send_list = []
 	for item in ret_list:
 		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
-#Found scrypt methods at https://pypi.python.org/pypi/scrypt/
-"""
-def sludger(data):
-	salt  = "I Hate Liam Echlin"
-	h1 = scrypt.hash(data, salt, N = 2048, r = 4, p = 4)
-	header = Header(2, 8 + len(h1), 0)
-	outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	outgoing.connect(("localhost", 1234))
-	outgoing.send(header.serialize())
-	outgoing.send(h1)
-	outgoing.close()
-"""
-
 def feces(p_list, outgoing):
-	listo = []
+	ret_list = []
 	poo = 0
 	for mol in p_list:
-		#(data, left, right) = struct.unpack("!LHH", mol)
-		print(mol)
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
 		if is_prime(data):
-			#sludger(str(data))
 			outgoing.send(bytes(str(data),'utf-8'))
 			data = 0
 			poo = 1
 		else:
 			pass
-		#listo.append(struct.pack("!LHH", data, left, right))
-		listo.append((left, right, data))	
+		ret_list.append((left, right, data))	
 
 	if poo:
-		return listo
+		return ret_list
 	else:
 		return 0
 
@@ -396,11 +365,9 @@ def deaeration(mol):
 	pass
 
 def phosphates(p_list):
-	lenlen = len(p_list)
 	dll = [('')]
 	s_child = 0
 	for mol in p_list:
-		#(data, left, right) = struct.unpack("!LHH", mol)
 		data = mol[0]
 		left = mol[1]
 		right = mol[2]
@@ -458,9 +425,14 @@ def clean_phosphates(dll):
 		last = head
 		head = dll[head][0]
 	dll.pop(0)
+	
+	for item in dll:
+		ret_list.append((item[0], item[1], item[2]))
+	return ret_list
+	
 	#for item in dll:
 	#	ret_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
-	return ret_list
+	#return ret_list
 """
 def chlorine(p_list):
 	for i in p_list:
@@ -471,8 +443,7 @@ def chlorine(p_list):
 			return p_list
 	return 0
 """
-
-#pulled from https://github.com/dsprimm/Final_capstone
+#pulled from https://docs.python.org/3/library/queue.html
 def main():
 	num_worker_threads = 2
 
@@ -493,40 +464,47 @@ def main():
 	recieved = []	
 
 	while server:
-		#put check to make sure we have same number of threads we started with
-		"""
-		if len(threads) < num_worker_threads:
-			t = threading.Thread(target=worker)
-			t.start()
-			threads.append(t)
-		"""
-		
-		conn, addr = server.accept()
-		if conn:
+		try:
+			#put check to make sure we have same number of threads we started with
+			if len(threads) < num_worker_threads:
+				t = threading.Thread(target=worker)
+				t.start()
+				threads.append(t)
+				
 			try:
-				conn.settimeout(5)
-				val = conn.recv(1024)
-				recieved.append(val)
-			except socket.timeout:
-				pass
+				conn, addr = server.accept()
+			except Exception:
+				break
+				
+			if conn:
+				try:
+					conn.settimeout(5)
+					val = conn.recv(1024)
+					recieved.append(val)
+				except socket.timeout:
+					pass
 
-		for data in recieved:
-			q.put(data)
-			recieved.remove(data)
-	
-		#if len(recieved) == 0:
-		#	break
-			
-		#server.close()
+			for data in recieved:
+				q.put(data)
+				recieved.remove(data)
+		
+			#if len(recieved) == 0:
+			#	break
+				
+			#server.close()
+		except KeyboardInterrupt:
+			print("Caught")
 
-	# block until all tasks are done
-	q.join()
+			# block until all tasks are done
+			q.join()
 
-	# stop workers
-	for i in range(num_worker_threads):
-		q.put(None)
-	for t in threads:
-		t.join()
+			# stop workers
+			for i in range(num_worker_threads):
+				q.put(None)
+			for t in threads:
+				t.join()
+				
+			server.close()
 	
 if __name__ == "__main__":
 	main()
