@@ -1,4 +1,4 @@
-#!/usr/bin/ python3
+#!/usr/bin/env python3
 
 import os
 import socket
@@ -12,6 +12,8 @@ import scrypt
 
 q = queue.Queue()
 
+poop_bucket = []
+
 class Header:
 	def __init__(self, type1, size, custom):
 		self.type1 = type1
@@ -20,6 +22,15 @@ class Header:
 
 	def serialize(self):
 		return struct.pack("!HHL", self.type1, self.size, self.custom)
+		
+class Bucket:
+	def __init__(self):
+		self.data = None
+	
+	def add(self, data):
+		#self.data = data
+		print(data)
+		poop_bucket.append(data)
 
 def is_prime(n):
 	if n==2 or n==3: 
@@ -58,26 +69,6 @@ def molecules(packet):
 	
 	ret_list = generate_mols(molecules)
 	return ret_list
-	
-def rip(md, a):
-	i = 1
-	while True:
-		if i > len(a):
-			return
-		if i not in md.keys():
-			i += 1
-			continue
-		if md[i][0] not in md.keys():
-			try:
-				md[md[i][0]] = (a[md[i][0]][0], a[md[i][0]][1])
-			except:
-				pass
-		if md[i][1] not in md.keys():
-			try:
-				md[md[i][1]] = (a[md[i][1]][0], a[md[i][1]][1])
-			except:
-				pass
-		i += 1
 
 def generate_mols(molecules):
 	m_list = []
@@ -95,7 +86,7 @@ def generate_mols(molecules):
 				break
 			else:
 				x += 1
-		rip(md, molecules)
+		conversion(md, molecules)
 		for i in md:
 			m_list.append(i)
 		m_list.append("")
@@ -115,6 +106,26 @@ def generate_mols(molecules):
 			i_list = [(0,0,0) for x in range(len(molecules))]
 	return ret_list
 	
+def conversion(md, mol_list):
+	i = 1
+	while True:
+		if i > len(mol_list):
+			return
+		if i not in md.keys():
+			i += 1
+			continue
+		if md[i][0] not in md.keys():
+			try:
+				md[md[i][0]] = (mol_list[md[i][0]][0], mol_list[md[i][0]][1])
+			except:
+				pass
+		if md[i][1] not in md.keys():
+			try:
+				md[md[i][1]] = (mol_list[md[i][1]][0], mol_list[md[i][1]][1])
+			except:
+				pass
+		i += 1
+	
 #https://docs.python.org/3/library/queue.html
 def worker():
 	while True:
@@ -125,6 +136,8 @@ def worker():
 		q.task_done()
 
 def parser(item):
+	print('here')
+	poop_bucket.append('1000')
 	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sludge_outgoing.connect(('localhost', 40000))
 
@@ -172,7 +185,7 @@ def parser(item):
 			"""
 			i = p_l
 			
-		p_l = functions["4"](i, sludge_outgoing)
+		p_l = functions["4"](i)
 		if p_l:
 			i = p_l
 
@@ -192,6 +205,13 @@ def parser(item):
 		if p_l:
 			mol = p_l
 		"""
+	list2 = []
+	list2 = str(poop_bucket)
+	print(list2)
+	if len(poop_bucket) == 2:
+		sludge_outgoing.send(bytes(','.join(poop_bucket),'utf-8'))
+		poop_bucket[:] = []
+		
 	sludge_outgoing.close()
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
@@ -213,15 +233,15 @@ def clean(p_list):
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
 def debris(p_list):
-	lenlen = len(p_list)
+	list_len = len(p_list)
 	for mol in p_list:
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
-		if left > lenlen:
+		if left > list_len:
 			p_list = clean(p_list)
 			return p_list
-		elif right > lenlen:
+		elif right > list_len:
 			p_list = clean(p_list)
 			return p_list
 	return 0
@@ -338,7 +358,8 @@ def clean_chain(dll):
 		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
-def feces(p_list, outgoing):
+def feces(p_list):
+	bucket = Bucket()
 	ret_list = []
 	poo = 0
 	for mol in p_list:
@@ -346,7 +367,8 @@ def feces(p_list, outgoing):
 		right = mol[1]
 		data = mol[2]
 		if is_prime(data):
-			outgoing.send(bytes(str(data),'utf-8'))
+			#outgoing.send(bytes(str(data),'utf-8'))
+			bucket.add(str(data))
 			data = 0
 			poo = 1
 		else:
