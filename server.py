@@ -202,11 +202,6 @@ def parser(item):
 			link = p_l
 
 		"""
-		p_l = functions["7"](mol)
-		print(p_l)
-		if p_l:
-			mol = p_l
-		
 		p_l = functions["8"](mol)
 		if p_l:
 			mol = p_l
@@ -226,6 +221,17 @@ def parser(item):
 	if len(waste_bucket) in range(1, 10):
 		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
 		waste_bucket[:] = []
+
+
+	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	water_outgoing.connect(('localhost', 40005))		
+	if p_l:
+		header = Header(0, 8 + 8*len(p_l), 0)
+		water_outgoing.send(header.serialize())
+		for i in p_l:
+				h1 = struct.pack("!LHH", i[2], i[0], i[1])
+				water_outgoing.send(h1)
+		water_outgoing.close()
 		
 	waste_outgoing.close()
 		
