@@ -1,11 +1,15 @@
 #!/bin/bash
 
 PID_FILE=/var/run/rerun.pid # need root permission to store in this directory
-EXEC=/root/treatment/residential # replace it with actual executable 
+EXEC=/root/treatment/sludge_server.py # replace it with actual executable 
+EXEC1=/root/treatment/waste_server.py
+EXEC2=/root/treatment/server.py
 
 function run() {
     # execute the program
-    $EXEC 54 &
+    $EXEC &
+    $EXEC1 &
+    $EXEC2 &
     # save its PID
     echo $! > $PID_FILE
 }
