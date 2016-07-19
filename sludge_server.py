@@ -31,7 +31,6 @@ def sludger(data):
 		outgoing.send(header.serialize())
 		for i in list1:
 			i = str(i)
-			print(i)
 			salt  = "I Hate Liam Echlin"
 			h1 = scrypt.hash(i, salt, N = 2048, r = 4, p = 4)
 			outgoing.send(h1)
@@ -87,8 +86,6 @@ def main():
 			for data in recieved:
 				q.put(data)
 				recieved.remove(data)
-				
-			
 		except KeyboardInterrupt:
 			print("Caught")
 
