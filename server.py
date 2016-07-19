@@ -12,7 +12,8 @@ import scrypt
 
 q = queue.Queue()
 
-poop_bucket = []
+sludge_bucket = []
+waste_bucket = []
 
 class Header:
 	def __init__(self, type1, size, custom):
@@ -28,10 +29,11 @@ class Bucket:
 		self.data = None
 	
 	def add(self, data):
-		#self.data = data
-		print(data)
-		poop_bucket.append(data)
-
+		sludge_bucket.append(data)
+		
+	def add_waste(self, data):
+		waste_bucket.append(data)
+		
 def is_prime(n):
 	if n==2 or n==3: 
 		return True
@@ -45,6 +47,8 @@ def is_prime(n):
 
 #Found at http://codegolf.stackexchange.com/questions/3134/undulant-numbers?page=1&tab=votes#tab-top
 def is_undulant(n):
+	if n == 0:
+		return False
 	digits = [int(i) for i in list(str(n))]
 	diffs = []
 	for i in range(len(digits) - 1):
@@ -99,6 +103,8 @@ def generate_mols(molecules):
 		if i:
 			added = 1
 			i_list[i] = molecules[i]
+			if molecules[i][0] > len(i_list) or molecules[i][1] > len(i_list):
+				i_list[0] = 1
 		else:
 			if added:
 				ret_list.append(i_list)
@@ -106,22 +112,24 @@ def generate_mols(molecules):
 			i_list = [(0,0,0) for x in range(len(molecules))]
 	return ret_list
 	
-def conversion(md, mol_list):
+def conversion(md, a):
 	i = 1
 	while True:
-		if i > len(mol_list):
+		if i > len(a) - 1:
 			return
 		if i not in md.keys():
+			if a[i][0] in md.keys():
+				md[i] = (a[i][0], a[i][1])
 			i += 1
 			continue
 		if md[i][0] not in md.keys():
 			try:
-				md[md[i][0]] = (mol_list[md[i][0]][0], mol_list[md[i][0]][1])
+				md[md[i][0]] = (a[md[i][0]][0], a[md[i][0]][1])
 			except:
 				pass
 		if md[i][1] not in md.keys():
 			try:
-				md[md[i][1]] = (mol_list[md[i][1]][0], mol_list[md[i][1]][1])
+				md[md[i][1]] = (a[md[i][1]][0], a[md[i][1]][1])
 			except:
 				pass
 		i += 1
@@ -136,121 +144,178 @@ def worker():
 		q.task_done()
 
 def parser(item):
-	print('here')
-	poop_bucket.append('1000')
+	bucket = Bucket()
 	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sludge_outgoing.connect(('localhost', 40000))
+	
+	waste_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	waste_outgoing.connect(('localhost', 40003))
+
 
 	functions = {"1": debris, "2": mercury, "3": selenium,
-	         "4": feces, "5": ammonia, "6": deaeration, "7": phosphates,
+	        "4": feces, "5": ammonia, "6": deaeration, "7": phosphates,
+			"8":chlorine, "9":lead
 			}
-	#"8": chlorine
 
 	mol = []
 	p_l = []
 
 	mol = molecules(item)
 
-	for i in mol:
-		p_l = functions["1"](i)
-		#if p_l[0] == 1: check for trash flag
+	print(mol)
+
+	for link in mol:
+		p_l = functions["1"](link)
 		if p_l:
 			header = Header(1, 8 + 8*len(p_l), 0)
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			outgoing.connect(("localhost", 3333))
+			outgoing.connect(("localhost", 3334))
 			outgoing.send(header.serialize())
-			outgoing.send(b''.join(p_l))
+			for i in p_l:
+				h1 = struct.pack("!LHH", i[2], i[0], i[1])
+				outgoing.send(h1)
 			outgoing.close()
 			return 0
-		"""
-		p_l = functions["2"](mol)
+		
+		p_l = functions["2"](link, bucket)
 		if p_l:
-			mol = p_l
-		"""
+			link = p_l
 			
-		p_l = functions["3"](i)
+		p_l = functions["3"](link, bucket)
 		if p_l:
-			#goes to waste functions
-			"""
-			print("Here")
-			header = Header(1, 8 + 8*len(p_l), 0)
-			outgoing1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			outgoing1.connect(("localhost", 33356))
-			outgoing1.send(header.serialize())
-			data = b""
-			for i in p_l:
-				data += struct.pack("!LHH", i[2], i[0], i[1])
-			outgoing1.send(data)
-			outgoing1.close()
-			"""
-			i = p_l
+			link = p_l
+						
+		p_l = functions["4"](link, bucket)
+		if p_l:
+			link = p_l
 			
-		p_l = functions["4"](i)
+		p_l = functions["5"](link, bucket)
 		if p_l:
-			i = p_l
+			link = p_l
+			
+		#p_l = functions["6"](link, bucket)
+		#if p_l:
+		#	link = p_l
+			
+		p_l = functions["7"](link, bucket)
+		if p_l:
+			link = p_l
 
 		"""
 		p_l = functions["7"](mol)
 		print(p_l)
 		if p_l:
-			header = Header(1, 8 + 8*len(p_l), 0)
-			outgoing1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			outgoing1.connect(("localhost", 33355))
-			outgoing1.send(header.serialize())
-			outgoing1.send(b''.join(p_l))
-			outgoing1.close()
 			mol = p_l
 		
 		p_l = functions["8"](mol)
 		if p_l:
 			mol = p_l
 		"""
-	list2 = []
-	list2 = str(poop_bucket)
-	print(list2)
-	if len(poop_bucket) == 2:
-		sludge_outgoing.send(bytes(','.join(poop_bucket),'utf-8'))
-		poop_bucket[:] = []
+		p_l = functions["9"](link, bucket)
+		if p_l:
+			link = p_l
+		
+	temp_list = []		
+	temp_list = str(sludge_bucket)
+	if len(sludge_bucket) in range(1, 10):
+		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
+		sludge_bucket[:] = []
+
+	temp_list2 = []		
+	temp_list2 = str(waste_bucket)
+	if len(waste_bucket) in range(1, 10):
+		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
+		waste_bucket[:] = []
+		
+	waste_outgoing.close()
 		
 	sludge_outgoing.close()
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
-def clean(p_list):
-	lenlen = len(p_list)
+def clean_debris(p_list):
+	list_len = len(p_list)
 	ret_list = []
-	for mol in p_list:
+	for mol in p_list[1:]:
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
 		if not data:
 			continue
-		if left > lenlen:
+		if left > list_len:
 			left = 0xFFFF
-		if right > lenlen:
+		if right > list_len:
 			right = 0xFFFF
 		ret_list.append((left, right, data))
 	return ret_list
 
-#derived from primmm at https://github.com/dsprimm/Final_capstone
 def debris(p_list):
 	list_len = len(p_list)
-	for mol in p_list:
+	for mol in p_list[1:]:
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
 		if left > list_len:
-			p_list = clean(p_list)
+			p_list = clean_debris(p_list)
 			return p_list
 		elif right > list_len:
-			p_list = clean(p_list)
+			p_list = clean_debris(p_list)
 			return p_list
 	return 0
 
-def mercury(mol):
-	pass
+def mercury(p_list, bucket):
+	double_l = []
+	for mol in p_list:
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
+		double_l.append((left, right, data))
+	change = 0
+	while True:
+		if merc_check(double_l, bucket) <= 1:
+			break
+		change = 1
+	if change:
+		return double_l
+	return double_l
 
-def selenium(p_list):
-	dll = [('')]
+#found with help from Primm
+def merc_check(double_l, bucket):
+	dic = {}
+	m_set = set()
+	for i in range(1, len(double_l)):
+		if double_l[i] != (0,0,0):
+			dic[i] = double_l[i]
+			m_set.add(double_l[i][0])
+			m_set.add(double_l[i][1])
+	point = 0
+	if 0 in m_set:
+		m_set.remove(0)
+	for i in dic:
+		if i not in m_set:
+			point += 1
+	if point > 1:
+		clean(double_l, dic, m_set, bucket)
+	return point
+
+def clean(double_l, dic, m_set, bucket):
+	small = 0
+	trash = None
+	for i in dic:
+		if i in m_set:
+			continue
+		else:
+			if not trash:
+				small = double_l[i][2] 
+				trash = i
+			elif small > double_l[i][2]:
+				small = double_l[i][2] 
+				trash = i
+	bucket.add_waste(str(double_l[trash][2]))
+	double_l[trash] = (0,0,0)
+
+#found with help from Primm
+def selenium(p_list, bucket):
+	double_l = [('')]
 	s_child = 0
 	for mol in p_list:
 		left = mol[0]
@@ -258,108 +323,109 @@ def selenium(p_list):
 		data = mol[2]
 		if left == 0 and right == 0:
 			continue
-		dll.append((left, right, data))
-	l = 0
-	r = 0
+		double_l.append((left, right, data))
 	m_dict = {}
-	for i in range(1, len(dll)):
-		m_dict[i] = (dll[i][0], dll[i][1], dll[i][2])
+	for i in range(1, len(double_l)):
+		m_dict[i] = (double_l[i][0], double_l[i][1], double_l[i][2])
 	chain = 0
 	dbl = 0
-	for i in m_dict:
+	for i in m_dict: 
 		if m_dict[i][0] == 0 and m_dict[i][1] or m_dict[i][1] == 0 and m_dict[i][0] or m_dict[i][0] == m_dict[i][1]:
 			if dbl:
 				return 0  # this cannot be selenium
 			chain = 1
+		if m_dict[i][0] == 0 and m_dict[i][0] == 0 and m_dict[i][2]:
+ 			return 0
 		else:
 			if chain:
 				return 0  # this cannot be selenium
 			dbl = 1
 	
 	if chain:
-		p_list = clean_chain(m_dict)
+		p_list = clean_chain(m_dict, bucket)
 		return p_list
 	else:
-		p_list = clean_dbl(m_dict)
+		p_list = clean_dbl(m_dict, bucket)
 		return p_list		
 
-def clean_dbl(dll):
+#found with help from Primm
+def clean_dbl(double_l, bucket):
 	big = 0
 	ret_list = []
 	last = 0
-	for i in dll:
-		if big < dll[i][2]:
-			big = dll[i][2]
+	for i in double_l:
+		if big < double_l[i][2]:
+			big = double_l[i][2]
 			trash = i
-	for i in dll:
+	for i in double_l:
 		if not last:
 			last = i
 		print(last)
-		if i in dll[dll[i][0]] and i in dll[dll[i][1]]:
+		if i in double_l[double_l[i][0]] and i in double_l[double_l[i][1]]:
 			pass
 		else:
 			return 0
 		if i == trash:
-			ret_list.append((dll[i][0], dll[i][1], 0))
-		elif trash == dll[i][0]:
-			if last == dll[i][1]:
-				ret_list.append((0, 0, dll[i][2]))
+			ret_list.append((double_l[i][0], double_l[i][1], 0))
+		elif trash == double_l[i][0]:
+			if last == double_l[i][1]:
+				ret_list.append((0, 0, double_l[i][2]))
 			else:
-				ret_list.append((0, dll[i][1], dll[i][2]))
-		elif trash == dll[i][1]:
-			if last == dll[i][0]:
-				ret_list.append((0, 0, dll[i][2]))
+				ret_list.append((0, double_l[i][1], double_l[i][2]))
+		elif trash == double_l[i][1]:
+			if last == double_l[i][0]:
+				ret_list.append((0, 0, double_l[i][2]))
 			else:
-				ret_list.append((dll[i][0], 0, dll[i][2]))
+				ret_list.append((double_l[i][0], 0, double_l[i][2]))
 		else:
-			if i in [dll[i][0]]:
-				ret_list.append((dll[i][0], 0, dll[i][2]))
+			if i in [double_l[i][0]]:
+				ret_list.append((double_l[i][0], 0, double_l[i][2]))
 			else:
-				ret_list.append((dll[i][1], 0, dll[i][2]))
+				ret_list.append((double_l[i][1], 0, double_l[i][2]))
 		last = i
-	#waste(dll[trash][2]) -> function to process waste
+	bucket.add_waste(str(double_l[trash][2]))
 	send_list = []
 	for item in ret_list:
 		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
-def clean_chain(dll):
+#found with help from Primm
+def clean_chain(double_l, bucket):
 	last = 0
 	big = 0
-	for i in dll:
+	for i in double_l:
 		if type(i) == int:
-			if dll[i][2] > big:
-				big = dll[i][2]
+			if double_l[i][2] > big:
+				big = double_l[i][2]
 				trash = i
 	ret_list = []
-	for i in dll:
-		if dll[i][0] == i:
-			if dll[i][1] not in dll.keys():
+	for i in double_l:
+		if double_l[i][0] == i:
+			if double_l[i][1] not in double_l.keys():
 				return 0
-		if dll[i][1] == i:
-			if dll[i][0] not in dll.keys():
+		if double_l[i][1] == i:
+			if double_l[i][0] not in double_l.keys():
 				return 0
-	for i in dll:
-		print(i, trash, dll[i])
+	for i in double_l:
+		print(i, trash, double_l[i])
 		if i == trash:
-			ret_list.append((dll[i][0], dll[i][1], 0))
-		elif trash == dll[i][0]:
-			if trash == dll[i][1]:
-				ret_list.append((0, 0, dll[i][2]))
+			ret_list.append((double_l[i][0], double_l[i][1], 0))
+		elif trash == double_l[i][0]:
+			if trash == double_l[i][1]:
+				ret_list.append((0, 0, double_l[i][2]))
 			else:
-				ret_list.append((0, dll[i][1], dll[i][2]))
-		elif trash == dll[i][1]:
-			ret_list.append((dll[i][0], 0, dll[i][2]))
+				ret_list.append((0, double_l[i][1], double_l[i][2]))
+		elif trash == double_l[i][1]:
+			ret_list.append((double_l[i][0], 0, double_l[i][2]))
 		else:
-			ret_list.append(dll[i])
-	#waste(dll[trash][2]) -> function to process waste
+			ret_list.append(double_l[i])
+	bucket.add_waste(str(double_l[trash][2]))
 	send_list = []
 	for item in ret_list:
 		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
-def feces(p_list):
-	bucket = Bucket()
+def feces(p_list, bucket):
 	ret_list = []
 	poo = 0
 	for mol in p_list:
@@ -367,7 +433,6 @@ def feces(p_list):
 		right = mol[1]
 		data = mol[2]
 		if is_prime(data):
-			#outgoing.send(bytes(str(data),'utf-8'))
 			bucket.add(str(data))
 			data = 0
 			poo = 1
@@ -380,62 +445,88 @@ def feces(p_list):
 	else:
 		return 0
 
-def ammonia(mol):
-	pass
+def ammonia(p_list, bucket):
+	ret_list = []
+	poo = 0
+	for mol in p_list:
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
+		if is_undulant(data):
+			bucket.add(str(data))
+			data = 0
+			pee = 1
+		else:
+			pass
+		ret_list.append((left, right, data))	
+
+	if pee:
+		return ret_list
+	else:
+		return 0
 
 def deaeration(mol):
 	pass
 
-def phosphates(p_list):
-	dll = [('')]
+#found with help from Primm
+def phosphates(p_list, bucket):
+	dll = [""]
 	s_child = 0
 	for mol in p_list:
-		data = mol[0]
-		left = mol[1]
-		right = mol[2]
-		if left == 0 and right == 0:
-			continue
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
 		if left == 0 or right == 0:
 			s_child += 1
 		dll.append((left, right, data))
-	for i in range(1, len(dll)):
-		if dll[i][0]:
-			try:
-				if i not in dll[dll[i][0]] and dll[i][0] != dll[i][1]:
-					return 5  # this is not phosphates
-			except Exception:
-				pass
-		if dll[i][1]:
-			try:
-				if i not in dll[dll[i][1]] and dll[i][0] != dll[i][1]:
-					return 8  # this is not phosphates
-			except Exception:
-				pass
-	if s_child != 2:  # if there are not only 2 nodes with data and only 1 child
-		return 2  # this is not phosphates
-	p_list = clean_phosphates(dll)
-	return p_list
+		
+	m_dict = {0: None}
 	
-def clean_phosphates(dll):
+	for i in range(1, len(dll)):
+		if dll[i] != (0,0,0):
+			m_dict[i] = (dll[i][0], dll[i][1], dll[i][2])
+			
+	print(m_dict)
+	
+	for i in m_dict:
+		if i:
+			if m_dict[i][0] and m_dict[i][0] in m_dict.keys():
+				if i not in m_dict[m_dict[i][0]] and m_dict[m_dict[i][0]]:
+					return 0
+			elif m_dict[i][1] and m_dict[i][1] in m_dict.keys():
+				if i not in m_dict[m_dict[i][1]] and m_dict[m_dict[i][1]]:
+					return 0
+	p_list = clean_phosphates(m_dict, bucket)
+	return p_list
+
+#found with help from Primm
+def clean_phosphates(dll, bucket):
+	print(dll)
 	ret_list = []
 	ends = []
-	for i in range(1, len(dll)):
-		if 0 == dll[i][0] or 0 == dll[i][1]:
-			ends.append(dll[i])
+	for i in dll:
+		if i:
+			if 0 == dll[i][0] or 0 == dll[i][1]:
+				ends.append(dll[i])
+				
+	print(ends)
+	if len(ends) == 1:
+		return(ends)
+		
 	if ends[0][2] >= ends[1][2]:
-		# rewire all nodes to chain link, pointed to the head, ends[0] is the new head
 		head = ends[0]
 	else:
-		# rewire all nodes to chain link, pointed to the head, ends[1] is the new head
 		head = ends[1]
-	for i in range(1, len(dll)):
-		if head == dll[i]:
-			if head[0]:
-				dll[i] = (head[0], head[0], head[2])
-			else:
-				dll[i] = (head[1], head[1], head[2])
-			head = i
-			break
+		
+	for i in dll:
+		if i:
+			if head == dll[i]:
+				if head[0]:
+					dll[i] = (head[0], head[0], head[2])
+				else:
+					dll[i] = (head[1], head[1], head[2])
+				head = i
+				break
 	last = head
 	while head:
 		if dll[head][0] == 0 or dll[head][1] == 0:
@@ -446,25 +537,49 @@ def clean_phosphates(dll):
 			dll[head] = (dll[head][1], dll[head][1], dll[head][2])
 		last = head
 		head = dll[head][0]
-	dll.pop(0)
-	
-	for item in dll:
+
+	for item in double_l:
 		ret_list.append((item[0], item[1], item[2]))
 	return ret_list
 	
-	#for item in dll:
-	#	ret_list.append(struct.pack("!LHH", item[2], item[0], item[1]))
-	#return ret_list
-"""
 def chlorine(p_list):
-	for i in p_list:
-		(data, left, right) = struct.unpack("!LHH", mol)
-		if left == right and left:
-			right = 0
-			mol = struct.pack("!LHH", data, left, right)
-			return p_list
-	return 0
-"""
+	pass
+	
+def is_triangle(n):
+	n = int(n)
+	if n <= 0:
+		return False
+	
+	#found at mathforum.org/library/drmath/view/57162.html
+	x = (n*(n+1)/2)
+		
+	n = (math.sqrt(1+(8*x) - 1)/2)
+	
+	if (x).is_integer():
+		return True
+	return False
+	
+def lead(p_list, bucket):
+	ret_list = []
+	lead = 0
+	for mol in p_list:
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
+		if is_triangle(data):
+			bucket.add_waste(str(data))
+			data = 0
+			lead = 1
+		else:
+			pass
+
+		ret_list.append((left, right, data))
+		
+	if lead:	
+		return ret_list
+	else:
+		return 0
+
 #pulled from https://docs.python.org/3/library/queue.html
 def main():
 	num_worker_threads = 2
@@ -509,11 +624,6 @@ def main():
 			for data in recieved:
 				q.put(data)
 				recieved.remove(data)
-		
-			#if len(recieved) == 0:
-			#	break
-				
-			#server.close()
 		except KeyboardInterrupt:
 			print("Caught")
 
