@@ -392,7 +392,7 @@ def clean_dbl(double_l, bucket):
 		if not last:
 			last = i
 		print(last)
-		if i in double_l[double_l[i][0]] and i in double_l[double_l[i][1]]:
+		if i in double_l[[i][0]] and i in double_l[[i][1]]:
 			pass
 		else:
 			return 0
