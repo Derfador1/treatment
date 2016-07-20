@@ -197,9 +197,9 @@ def parser(item):
 		#if p_l:
 		#	link = p_l
 			
-		p_l = functions["7"](link, bucket)
-		if p_l:
-			link = p_l
+		#p_l = functions["7"](link, bucket)
+		#if p_l:
+		#	link = p_l
 
 		"""
 		p_l = functions["8"](mol)
