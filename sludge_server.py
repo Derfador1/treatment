@@ -23,17 +23,27 @@ class Header:
 def sludger(data):
 	if data:
 		outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		outgoing.connect(("localhost", 1234))
+		#outgoing.connect(("downstream", 4444))
 		list1 = []
 		list1 = data.split(',')
-		print("str", list1)
-		header = Header(2, 8 + len(list1)*64, 0)
-		outgoing.send(header.serialize())
+		#print("str", list1)
+		#header = Header(2, 8 + len(list1)*64, 0)
+		#outgoing.send(header.serialize())
+		h1 = b''
 		for i in list1:
 			i = str(i)
 			salt  = "I Hate Liam Echlin"
-			h1 = scrypt.hash(i, salt, N = 2048, r = 4, p = 4)
-			outgoing.send(h1)
+			h1 += scrypt.hash(i, salt, N = 2048, r = 4, p = 4)
+		not_sent = 1
+		while not_sent:
+			try:
+				outgoing.connect(("downstream", 4444))
+				header = Header(2, 8 + len(list1)*64, 0)
+				outgoing.send(header.serialize())
+				outgoing.send(h1)
+				not_sent = 0
+			except Exception:
+				continue
 		outgoing.close()
 	
 def worker():
@@ -51,7 +61,7 @@ def main():
 
 	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-	server.bind(('localhost', 40000))
+	server.bind(('', 40000))
 	
 	server.listen(num_worker_threads)
 	
