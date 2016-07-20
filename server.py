@@ -167,13 +167,28 @@ def parser(item):
 	for link in mol:
 		p_l = functions["1"](link)
 		if p_l:
-			header = Header(1, 8 + 8*len(p_l), 0)
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			outgoing.connect(("downstream", 2222))
-			outgoing.send(header.serialize())
+
+			h2 = b''
 			for i in p_l:
-				h1 = struct.pack("!LHH", i[2], i[0], i[1])
-				outgoing.send(h1)
+				h2 += struct.pack("!LHH", i[2], i[0], i[1])
+
+			not_sent = 1
+			while not_sent:
+				try:
+					outgoing.connect(("downstream", 2222))
+					header = Header(1, 8 + 8*len(p_l), 0)
+					outgoing.send(header.serialize())
+					outgoing.send(h2)
+					not_sent = 0
+				except Exception:
+					continue
+			#outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			#outgoing.connect(("downstream", 2222))
+			#outgoing.send(header.serialize())
+			#for i in p_l:
+			#	h1 = struct.pack("!LHH", i[2], i[0], i[1])
+			#	outgoing.send(h1)
 			outgoing.close()
 			return 0
 		
@@ -229,17 +244,20 @@ def parser(item):
 		for i in p_l:
 			h1 += struct.pack("!LHH", i[2], i[0], i[1])
 
-	not_sent = 1
-	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	while not_sent:
-		try:
-			water_outgoing.connect(("downstream", 1111))
-			header = Header(0, 8 + 8*len(p_l), 0)
-			water_outgoing.send(header.serialize())
-			water_outgoing.send(h1)
-			not_sent = 0
-		except Exception:
-			continue
+		not_sent = 1
+		water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		while not_sent:
+			try:
+				water_outgoing.connect(("downstream", 1111))
+				header = Header(0, 8 + 8*len(p_l), 0)
+				water_outgoing.send(header.serialize())
+				water_outgoing.send(h1)
+				not_sent = 0
+			except Exception:
+				continue
+
+
+		water_outgoing.close()
 	"""	
 	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	not_sent = 1
@@ -256,7 +274,6 @@ def parser(item):
 				h1 = struct.pack("!LHH", i[2], i[0], i[1])
 				water_outgoing.send(h1)
 	"""
-	water_outgoing.close()
 		
 	waste_outgoing.close()
 		
