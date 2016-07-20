@@ -495,7 +495,7 @@ def feces(p_list, bucket):
 
 def ammonia(p_list, bucket):
 	ret_list = []
-	poo = 0
+	pee = 0
 	for mol in p_list:
 		left = mol[0]
 		right = mol[1]
@@ -630,7 +630,7 @@ def lead(p_list, bucket):
 
 #pulled from https://docs.python.org/3/library/queue.html
 def main():
-	num_worker_threads = 2
+	num_worker_threads = 20
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
