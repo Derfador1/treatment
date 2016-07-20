@@ -146,10 +146,10 @@ def worker():
 def parser(item):
 	bucket = Bucket()
 	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sludge_outgoing.connect(('localhost', 40000))
+	sludge_outgoing.connect(('', 40000))
 	
 	waste_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	waste_outgoing.connect(('localhost', 40003))
+	waste_outgoing.connect(('', 40003))
 
 
 	functions = {"1": debris, "2": mercury, "3": selenium,
@@ -169,7 +169,7 @@ def parser(item):
 		if p_l:
 			header = Header(1, 8 + 8*len(p_l), 0)
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			outgoing.connect(("localhost", 3334))
+			outgoing.connect(("downstream", 2222))
 			outgoing.send(header.serialize())
 			for i in p_l:
 				h1 = struct.pack("!LHH", i[2], i[0], i[1])
@@ -223,15 +223,40 @@ def parser(item):
 		waste_bucket[:] = []
 
 
+	h1 = b''
+
+	if p_l:
+		for i in p_l:
+			h1 += struct.pack("!LHH", i[2], i[0], i[1])
+
+	not_sent = 1
 	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	water_outgoing.connect(('localhost', 40005))		
+	while not_sent:
+		try:
+			water_outgoing.connect(("downstream", 1111))
+			header = Header(0, 8 + 8*len(p_l), 0)
+			water_outgoing.send(header.serialize())
+			water_outgoing.send(h1)
+			not_sent = 0
+		except Exception:
+			continue
+	"""	
+	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	not_sent = 1
+	while not_sent:
+		try:
+			water_outgoing.connect(("downstream", 1111))
+			not_sent = 0
+		except Exception:
+			continue		
 	if p_l:
 		header = Header(0, 8 + 8*len(p_l), 0)
 		water_outgoing.send(header.serialize())
 		for i in p_l:
 				h1 = struct.pack("!LHH", i[2], i[0], i[1])
 				water_outgoing.send(h1)
-		water_outgoing.close()
+	"""
+	water_outgoing.close()
 		
 	waste_outgoing.close()
 		
@@ -594,7 +619,7 @@ def main():
 
 	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-	server.bind(('localhost', 1132))
+	server.bind(('', 1111))
 	
 	server.listen(num_worker_threads)
 
