@@ -29,18 +29,28 @@ def worker():
 
 #Found scrypt methods at https://pypi.python.org/pypi/scrypt/
 def waste(data):
-	print(data)
+	#print(data)
 	if data:
 		outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		outgoing.connect(("localhost", 2345))
+		#outgoing.connect(("downstream", 8888))
 		listo = []
 		listo = data.split(',')
-		header = Header(4, 8+len(listo)*8, 0)
-		outgoing.send(header.serialize())
+		#header = Header(4, 8+len(listo)*8, 0)
+		#outgoing.send(header.serialize())
+		h1 = b''
 		for i in listo:
 			i = int(i)
-			h1 = struct.pack("!LL", i, 0)
-			outgoing.send(h1)
+			h1 += struct.pack("!LL", i, 0)
+		not_sent = 1
+		while not_sent:
+			try:
+				outgoing.connect(("downstream", 8888))
+				header = Header(4, 8+len(listo)*8, 0)
+				outgoing.send(header.serialize())
+				outgoing.send(h1)
+				not_sent = 0
+			except Exception:
+				continue
 		outgoing.close()
 
 def main():
