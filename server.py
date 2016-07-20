@@ -162,7 +162,9 @@ def parser(item):
 
 	mol = molecules(item)
 
-	print(mol)
+	#print(mol)
+
+	linker = []
 
 	for link in mol:
 		p_l = functions["1"](link)
@@ -181,6 +183,7 @@ def parser(item):
 					outgoing.send(header.serialize())
 					outgoing.send(h2)
 					not_sent = 0
+					print("Debris sent")
 				except Exception:
 					continue
 			#outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -224,24 +227,31 @@ def parser(item):
 		p_l = functions["9"](link, bucket)
 		if p_l:
 			link = p_l
+
+		if link:
+			linker = link
 		
 	temp_list = []		
 	temp_list = str(sludge_bucket)
-	if len(sludge_bucket) in range(1, 10):
+	if len(sludge_bucket) in range(10, 15):
+		print("Sending to sludge server")
 		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
 		sludge_bucket[:] = []
 
 	temp_list2 = []		
 	temp_list2 = str(waste_bucket)
-	if len(waste_bucket) in range(1, 10):
+	print("Len of waste bucket {}".format(len(waste_bucket)))
+	if len(waste_bucket) in range(10, 15):
+		print("Sending to waste server")
 		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
 		waste_bucket[:] = []
 
 
 	h1 = b''
 
-	if p_l:
-		for i in p_l:
+	if linker:
+		print("Water")
+		for i in link:
 			h1 += struct.pack("!LHH", i[2], i[0], i[1])
 
 		not_sent = 1
@@ -249,10 +259,11 @@ def parser(item):
 		while not_sent:
 			try:
 				water_outgoing.connect(("downstream", 1111))
-				header = Header(0, 8 + 8*len(p_l), 0)
+				header = Header(0, 8 + 8*len(linker), 0)
 				water_outgoing.send(header.serialize())
 				water_outgoing.send(h1)
 				not_sent = 0
+				print("Water sent")
 			except Exception:
 				continue
 
@@ -342,6 +353,7 @@ def merc_check(double_l, bucket):
 		if i not in m_set:
 			point += 1
 	if point > 1:
+		print("Found merc")
 		clean(double_l, dic, m_set, bucket)
 	return point
 
@@ -398,6 +410,7 @@ def selenium(p_list, bucket):
 
 #found with help from Primm
 def clean_dbl(double_l, bucket):
+	print("Cleaning double l")
 	big = 0
 	ret_list = []
 	last = 0
@@ -408,7 +421,7 @@ def clean_dbl(double_l, bucket):
 	for i in double_l:
 		if not last:
 			last = i
-		print(last)
+		#print(last)
 		if i in double_l[[i][0]] and i in double_l[[i][1]]:
 			pass
 		else:
@@ -439,6 +452,7 @@ def clean_dbl(double_l, bucket):
 
 #found with help from Primm
 def clean_chain(double_l, bucket):
+	print("Cleaning chain")
 	last = 0
 	big = 0
 	for i in double_l:
@@ -455,7 +469,7 @@ def clean_chain(double_l, bucket):
 			if double_l[i][0] not in double_l.keys():
 				return 0
 	for i in double_l:
-		print(i, trash, double_l[i])
+		#print(i, trash, double_l[i])
 		if i == trash:
 			ret_list.append((double_l[i][0], double_l[i][1], 0))
 		elif trash == double_l[i][0]:
@@ -481,6 +495,7 @@ def feces(p_list, bucket):
 		right = mol[1]
 		data = mol[2]
 		if is_prime(data):
+			print("Feces found")
 			bucket.add(str(data))
 			data = 0
 			poo = 1
@@ -501,6 +516,7 @@ def ammonia(p_list, bucket):
 		right = mol[1]
 		data = mol[2]
 		if is_undulant(data):
+			print("Ammonia found")
 			bucket.add(str(data))
 			data = 0
 			pee = 1
@@ -534,7 +550,7 @@ def phosphates(p_list, bucket):
 		if dll[i] != (0,0,0):
 			m_dict[i] = (dll[i][0], dll[i][1], dll[i][2])
 			
-	print(m_dict)
+	#print(m_dict)
 	
 	for i in m_dict:
 		if i:
@@ -549,14 +565,16 @@ def phosphates(p_list, bucket):
 
 #found with help from Primm
 def clean_phosphates(dll, bucket):
-	print(dll)
+	print("Cleaning phosphates")
+	#print(dll)
 	ret_list = []
 	ends = []
 	for i in dll:
 		if i:
 			if 0 == dll[i][0] or 0 == dll[i][1]:
 				ends.append(dll[i])
-				
+	
+	print("Ends")			
 	print(ends)
 	if len(ends) == 1:
 		return(ends)
@@ -565,7 +583,10 @@ def clean_phosphates(dll, bucket):
 		head = ends[0]
 	else:
 		head = ends[1]
-		
+	
+	print("Ends after")
+	print(ends)
+	
 	for i in dll:
 		if i:
 			if head == dll[i]:
@@ -577,6 +598,8 @@ def clean_phosphates(dll, bucket):
 				break
 	last = head
 	while head:
+		print("Phosphates {}".format(dll))
+		print(head)
 		if dll[head][0] == 0 or dll[head][1] == 0:
 			dll[head] = (0, 0, dll[head][2])
 		elif dll[head][0] != last:
@@ -586,14 +609,19 @@ def clean_phosphates(dll, bucket):
 		last = head
 		head = dll[head][0]
 
-	for item in double_l:
+		print("end of while loop")
+		print(last)
+		print(head)
+
+	for item in dll:
 		ret_list.append((item[0], item[1], item[2]))
 	return ret_list
 	
 def chlorine(p_list):
 	pass
 	
-def is_triangle(n):
+#def is_triangle(n):
+	"""
 	n = int(n)
 	if n <= 0:
 		return False
@@ -606,6 +634,17 @@ def is_triangle(n):
 	if (x).is_integer():
 		return True
 	return False
+	"""
+def is_triangle(num):
+	if num == 0:
+		return False
+	num = num * 2
+	n = int(math.sqrt(num))
+	if n ** 2 + n == num:
+		return True
+	elif (n+1) ** 2 + (n+1) == num:
+		return True
+	return False
 	
 def lead(p_list, bucket):
 	ret_list = []
@@ -615,6 +654,7 @@ def lead(p_list, bucket):
 		right = mol[1]
 		data = mol[2]
 		if is_triangle(data):
+			#print("Lead found")
 			bucket.add_waste(str(data))
 			data = 0
 			lead = 1
