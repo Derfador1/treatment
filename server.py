@@ -211,9 +211,9 @@ def parser(item):
 		if p_l:
 			link = p_l
 			
-		#p_l = functions["6"](link, bucket)
-		#if p_l:
-		#	link = p_l
+		p_l = functions["6"](link, bucket)
+		if p_l:
+			link = p_l
 			
 		#p_l = functions["7"](link, bucket)
 		#if p_l:
@@ -231,15 +231,15 @@ def parser(item):
 		if link:
 			linker = link
 		
-	temp_list = []		
-	temp_list = str(sludge_bucket)
+	#temp_list = []		
+	#temp_list = str(sludge_bucket)
 	if len(sludge_bucket) in range(10, 15):
 		print("Sending to sludge server")
 		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
 		sludge_bucket[:] = []
 
-	temp_list2 = []		
-	temp_list2 = str(waste_bucket)
+	#temp_list2 = []		
+	#temp_list2 = str(waste_bucket)
 	print("Len of waste bucket {}".format(len(waste_bucket)))
 	if len(waste_bucket) in range(10, 15):
 		print("Sending to waste server")
@@ -247,6 +247,36 @@ def parser(item):
 		waste_bucket[:] = []
 
 
+
+	h1 = b''
+
+	if linker:
+		for i in linker:
+			#if i[2]:
+			bucket.add_water(i)
+
+		if len(water_bucket) in range (10, 15):
+			print("Water")			
+			#add four chlorine
+			#add one air
+			
+			for i in water_bucket:
+				h1 += struct.pack("!LHH", i[2], i[0], i[1])
+			not_sent = 1
+			water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			while not_sent:
+				try:
+					water_outgoing.connect(("downstream", 1111))
+					header = Header(0, 8 + 8*len(linker), 0)
+					water_outgoing.send(header.serialize())
+					water_outgoing.send(h1)
+					not_sent = 0
+					water_bucket[:] = []
+				except Exception:
+					continue
+			water_outgoing.close()
+
+	"""
 	h1 = b''
 
 	if linker:
@@ -269,7 +299,7 @@ def parser(item):
 
 
 		water_outgoing.close()
-	"""	
+	
 	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	not_sent = 1
 	while not_sent:
@@ -529,8 +559,50 @@ def ammonia(p_list, bucket):
 	else:
 		return 0
 
-def deaeration(mol):
-	pass
+def deaeration(p_list):
+	dll = []
+	for mol in p_list:
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
+		dll.append((left, right, data))
+	change = 0
+	while True:
+		if air_check(dll) == 0:
+			break
+		change = 1
+	if change:
+		return dll
+	return 0
+
+def air_check(d_list):
+	dic = {}
+	for i in range(1, len(d_list)):
+		if d_list[i][2] == 0:
+			print("before clean {}".format(d_list))
+			clean_all_zero(d_list)
+			print("After clean {}".format(d_list))
+			return 1
+	return 0
+
+def clean_all_zero(d_list):
+	remove = None
+	for i in range(1, len(d_list)):
+		if d_list[i][2] == 0:
+			remove = i
+			break
+	for i in range(1, len(d_list)):
+		if i == remove:
+			continue
+		if d_list[i][0] == remove:
+			d_list[i] = (d_list[d_list[i][0]][0], d_list[i][1],d_list[i][2])
+		if d_list[i][1] == remove:
+			d_list[i] = (d_list[i][0], d_list[d_list[i][1]][1],d_list[i][2])
+		if d_list[i][0] >= remove:
+			d_list[i] = (d_list[i][0]-1, d_list[i][1],d_list[i][2])
+		if d_list[i][1] >= remove:
+			d_list[i] = (d_list[i][0], d_list[i][1]-1,d_list[i][2])
+	d_list.pop(remove)
 
 #found with help from Primm
 def phosphates(p_list, bucket):
@@ -620,21 +692,7 @@ def clean_phosphates(dll, bucket):
 def chlorine(p_list):
 	pass
 	
-#def is_triangle(n):
-	"""
-	n = int(n)
-	if n <= 0:
-		return False
-	
-	#found at mathforum.org/library/drmath/view/57162.html
-	x = (n*(n+1)/2)
-		
-	n = (math.sqrt(1+(8*x) - 1)/2)
-	
-	if (x).is_integer():
-		return True
-	return False
-	"""
+#found at mathforum.org/library/drmath/view/57162.html
 def is_triangle(num):
 	if num == 0:
 		return False
@@ -698,6 +756,7 @@ def main():
 				
 			try:
 				conn, addr = server.accept()
+				print(addr)
 			except Exception:
 				break
 				
