@@ -34,6 +34,9 @@ class Bucket:
 		
 	def add_waste(self, data):
 		waste_bucket.append(data)
+
+	def add_water(self, data):
+		water_bucket.append(data)
 		
 def is_prime(n):
 	if n==2 or n==3: 
@@ -212,7 +215,7 @@ def parser(item):
 		if p_l:
 			link = p_l
 			
-		p_l = functions["6"](link, bucket)
+		p_l = functions["6"](link)
 		if p_l:
 			link = p_l
 			
@@ -234,15 +237,15 @@ def parser(item):
 		
 	#temp_list = []		
 	#temp_list = str(sludge_bucket)
-	if len(sludge_bucket) in range(10, 15):
+	if len(sludge_bucket) in range(10, 20):
 		print("Sending to sludge server")
 		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
 		sludge_bucket[:] = []
 
 	#temp_list2 = []		
 	#temp_list2 = str(waste_bucket)
-	print("Len of waste bucket {}".format(len(waste_bucket)))
-	if len(waste_bucket) in range(10, 15):
+	#print("Len of waste bucket {}".format(len(waste_bucket)))
+	if len(waste_bucket) in range(10, 20):
 		print("Sending to waste server")
 		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
 		waste_bucket[:] = []
@@ -255,9 +258,9 @@ def parser(item):
 		for i in linker:
 			#if i[2]:
 			bucket.add_water(i)
-
-		if len(water_bucket) in range (10, 15):
-			print("Water")			
+		print("Len of water bucket {}".format(len(water_bucket)))
+		if len(water_bucket) > 95:
+			print("Water sending")			
 			#add four chlorine
 			#add one air
 			
@@ -273,6 +276,7 @@ def parser(item):
 					water_outgoing.send(h1)
 					not_sent = 0
 					water_bucket[:] = []
+					print("Water sent correctly")
 				except Exception:
 					continue
 			water_outgoing.close()
@@ -580,9 +584,9 @@ def air_check(d_list):
 	dic = {}
 	for i in range(1, len(d_list)):
 		if d_list[i][2] == 0:
-			print("before clean {}".format(d_list))
+			#print("before clean {}".format(d_list))
 			clean_all_zero(d_list)
-			print("After clean {}".format(d_list))
+			#print("After clean {}".format(d_list))
 			return 1
 	return 0
 
@@ -757,7 +761,7 @@ def main():
 				
 			try:
 				conn, addr = server.accept()
-				print(addr)
+				#print(addr)
 			except Exception:
 				break
 				
