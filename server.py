@@ -14,6 +14,7 @@ q = queue.Queue()
 
 sludge_bucket = []
 waste_bucket = []
+water_bucket = []
 
 class Header:
 	def __init__(self, type1, size, custom):
