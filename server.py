@@ -256,8 +256,8 @@ def parser(item):
 
 	if linker:
 		for i in linker:
-			#if i[2]:
-			bucket.add_water(i)
+			if i[2]:
+				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
 		if len(water_bucket) > 95:
 			print("Water sending")			
@@ -697,17 +697,28 @@ def clean_phosphates(dll, bucket):
 def chlorine(p_list):
 	pass
 	
-#found at mathforum.org/library/drmath/view/57162.html
+#found at hubpages.com/education/How-to-Tell-If-a-Number-is-Triangular
 def is_triangle(num):
-	if num == 0:
-		return False
-	num = num * 2
-	n = int(math.sqrt(num))
-	if n ** 2 + n == num:
-		return True
-	elif (n+1) ** 2 + (n+1) == num:
-		return True
-	return False
+        """
+        if num == 0:
+                return False
+        num = num * 2
+        n = int(math.sqrt(num))
+        if n ** 2 + n == num:
+                return True
+        elif (n+1) ** 2 + (n+1) == num:
+                return True
+        return False
+        """
+        if num == 0:
+                return False
+
+        number = .5*math.sqrt(8*num + 1) - .5
+
+        if number.is_integer():
+                return True
+        return False
+
 	
 def lead(p_list, bucket):
 	ret_list = []
@@ -735,13 +746,13 @@ def lead(p_list, bucket):
 def main():
 	num_worker_threads = 20
 
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	#server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 	server.bind(('', 1111))
 	
-	server.listen(num_worker_threads)
+	#server.listen(num_worker_threads)
 
 	threads = []
 	for i in range(num_worker_threads):
@@ -760,18 +771,18 @@ def main():
 				threads.append(t)
 				
 			try:
-				conn, addr = server.accept()
-				#print(addr)
+				#conn, addr = server.accept()
+				conn, addr = server.recvfrom(4096)
+				#print(conn)
+				print(addr)
 			except Exception:
+				#print("Here")
 				break
 				
 			if conn:
-				try:
-					conn.settimeout(5)
-					val = conn.recv(1024)
-					recieved.append(val)
-				except socket.timeout:
-					pass
+				#conn.settimeout(5)
+				#val = conn.recvfrom(1024)
+				recieved.append(conn)
 
 			for data in recieved:
 				q.put(data)
