@@ -261,8 +261,6 @@ def parser(item):
 		print("Len of water bucket {}".format(len(water_bucket)))
 		if len(water_bucket) > 95:
 			print("Water sending")			
-			#add four chlorine
-			#add one air
 			
 			for i in water_bucket:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
@@ -324,6 +322,9 @@ def parser(item):
 	waste_outgoing.close()
 		
 	sludge_outgoing.close()
+
+def phosphates():
+	pass
 
 #derived from primmm at https://github.com/dsprimm/Final_capstone
 def clean_debris(p_list):
@@ -608,91 +609,6 @@ def clean_all_zero(d_list):
 		if d_list[i][1] >= remove:
 			d_list[i] = (d_list[i][0], d_list[i][1]-1,d_list[i][2])
 	d_list.pop(remove)
-
-#found with help from Primm
-def phosphates(p_list, bucket):
-	dll = [""]
-	s_child = 0
-	for mol in p_list:
-		left = mol[0]
-		right = mol[1]
-		data = mol[2]
-		if left == 0 or right == 0:
-			s_child += 1
-		dll.append((left, right, data))
-		
-	m_dict = {0: None}
-	
-	for i in range(1, len(dll)):
-		if dll[i] != (0,0,0):
-			m_dict[i] = (dll[i][0], dll[i][1], dll[i][2])
-			
-	#print(m_dict)
-	
-	for i in m_dict:
-		if i:
-			if m_dict[i][0] and m_dict[i][0] in m_dict.keys():
-				if i not in m_dict[m_dict[i][0]] and m_dict[m_dict[i][0]]:
-					return 0
-			elif m_dict[i][1] and m_dict[i][1] in m_dict.keys():
-				if i not in m_dict[m_dict[i][1]] and m_dict[m_dict[i][1]]:
-					return 0
-	p_list = clean_phosphates(m_dict, bucket)
-	return p_list
-
-#found with help from Primm
-def clean_phosphates(dll, bucket):
-	print("Cleaning phosphates")
-	#print(dll)
-	ret_list = []
-	ends = []
-	for i in dll:
-		if i:
-			if 0 == dll[i][0] or 0 == dll[i][1]:
-				ends.append(dll[i])
-	
-	print("Ends")			
-	print(ends)
-	if len(ends) == 1:
-		return(ends)
-		
-	if ends[0][2] >= ends[1][2]:
-		head = ends[0]
-	else:
-		head = ends[1]
-	
-	print("Ends after")
-	print(ends)
-	
-	for i in dll:
-		if i:
-			if head == dll[i]:
-				if head[0]:
-					dll[i] = (head[0], head[0], head[2])
-				else:
-					dll[i] = (head[1], head[1], head[2])
-				head = i
-				break
-	last = head
-	while head:
-		print("Phosphates {}".format(dll))
-		print(head)
-		if dll[head][0] == 0 or dll[head][1] == 0:
-			dll[head] = (0, 0, dll[head][2])
-		elif dll[head][0] != last:
-			dll[head] = (dll[head][0], dll[head][0], dll[head][2])
-		else:
-			dll[head] = (dll[head][1], dll[head][1], dll[head][2])
-		last = head
-		head = dll[head][0]
-
-		print("end of while loop")
-		print(last)
-		print(head)
-
-	for item in dll:
-		ret_list.append((item[0], item[1], item[2]))
-	return ret_list
 	
 def chlorine(p_list):
 	pass
@@ -728,7 +644,7 @@ def lead(p_list, bucket):
 		right = mol[1]
 		data = mol[2]
 		if is_triangle(data):
-			#print("Lead found")
+			print("Lead found")
 			bucket.add_waste(str(data))
 			data = 0
 			lead = 1
