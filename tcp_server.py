@@ -178,6 +178,15 @@ def parser(item):
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 			h2 = b''
+			
+			debris_l = functions["3"](p_l, bucket)
+			
+			if debris_l:
+				print("Lead cleared from debris")
+				p_l = debris_l
+			else:
+				print("No lead found")
+				
 			for i in p_l:
 				h2 += struct.pack("!LHH", i[2], i[0], i[1])
 
