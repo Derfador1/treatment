@@ -158,7 +158,7 @@ def parser(item):
 
 	functions = {"1": debris, "2": mercury, "3": selenium,
 	        "4": feces, "5": ammonia, "6": deaeration, "7": phosphates,
-			"8":chlorine, "9":lead
+			"8":chlorinate, "9":lead
 			}
 
 	mol = []
@@ -261,8 +261,9 @@ def parser(item):
 		print("Len of water bucket {}".format(len(water_bucket)))
 		if len(water_bucket) > 95:
 			print("Water sending")			
-			
-			for i in water_bucket:
+			water = functions["8"](water_bucket)
+
+			for i in water:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
 			not_sent = 1
 			water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -610,8 +611,30 @@ def clean_all_zero(d_list):
 			d_list[i] = (d_list[i][0], d_list[i][1]-1,d_list[i][2])
 	d_list.pop(remove)
 	
-def chlorine(p_list):
-	pass
+def chlorinate(bucket):
+        #for i in bucket[1:5]:
+                #bucket.remove(i)       
+
+        #print(bucket)
+
+        for mol in bucket[1:5]:
+                left = mol[0]
+                right = mol[1]
+                data = mol[2]
+
+                if data:
+                        right = left
+                else:
+                        left = right
+
+                bucket.append((left, right, data))
+
+        for i in bucket[1:5]:
+                bucket.remove(i)
+
+        #print(bucket)
+
+        return bucket
 	
 #found at hubpages.com/education/How-to-Tell-If-a-Number-is-Triangular
 def is_triangle(num):
