@@ -66,6 +66,9 @@ def is_undulant(n):
 		       return False
 	return True
 
+#found in coordination with Primm at
+#https://github.com/dsprimm/Final_capstone/blob/master/molecular_separation.py
+#***
 def molecules(packet):
 	pull = 8
 	(type, size, custom) = struct.unpack("!HHL", packet[:pull])
@@ -137,6 +140,7 @@ def conversion(md, a):
 			except:
 				pass
 		i += 1
+#***
 	
 #https://docs.python.org/3/library/queue.html
 def worker():
@@ -166,8 +170,6 @@ def parser(item):
 
 	mol = molecules(item)
 
-	#print(mol)
-
 	linker = []
 
 	for link in mol:
@@ -190,12 +192,6 @@ def parser(item):
 					print("Debris sent")
 				except Exception:
 					continue
-			#outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			#outgoing.connect(("downstream", 2222))
-			#outgoing.send(header.serialize())
-			#for i in p_l:
-			#	h1 = struct.pack("!LHH", i[2], i[0], i[1])
-			#	outgoing.send(h1)
 			outgoing.close()
 			return 0
 		
@@ -219,15 +215,6 @@ def parser(item):
 		if p_l:
 			link = p_l
 			
-		#p_l = functions["7"](link, bucket)
-		#if p_l:
-		#	link = p_l
-
-		"""
-		p_l = functions["8"](mol)
-		if p_l:
-			mol = p_l
-		"""
 		p_l = functions["9"](link, bucket)
 		if p_l:
 			link = p_l
@@ -235,16 +222,11 @@ def parser(item):
 		if link:
 			linker = link
 		
-	#temp_list = []		
-	#temp_list = str(sludge_bucket)
 	if len(sludge_bucket) in range(10, 20):
 		print("Sending to sludge server")
 		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
 		sludge_bucket[:] = []
 
-	#temp_list2 = []		
-	#temp_list2 = str(waste_bucket)
-	#print("Len of waste bucket {}".format(len(waste_bucket)))
 	if len(waste_bucket) in range(10, 20):
 		print("Sending to waste server")
 		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
@@ -279,46 +261,6 @@ def parser(item):
 				except Exception:
 					continue
 			water_outgoing.close()
-
-	"""
-	h1 = b''
-
-	if linker:
-		print("Water")
-		for i in link:
-			h1 += struct.pack("!LHH", i[2], i[0], i[1])
-
-		not_sent = 1
-		water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		while not_sent:
-			try:
-				water_outgoing.connect(("downstream", 1111))
-				header = Header(0, 8 + 8*len(linker), 0)
-				water_outgoing.send(header.serialize())
-				water_outgoing.send(h1)
-				not_sent = 0
-				print("Water sent")
-			except Exception:
-				continue
-
-
-		water_outgoing.close()
-	
-	water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	not_sent = 1
-	while not_sent:
-		try:
-			water_outgoing.connect(("downstream", 1111))
-			not_sent = 0
-		except Exception:
-			continue		
-	if p_l:
-		header = Header(0, 8 + 8*len(p_l), 0)
-		water_outgoing.send(header.serialize())
-		for i in p_l:
-				h1 = struct.pack("!LHH", i[2], i[0], i[1])
-				water_outgoing.send(h1)
-	"""
 		
 	waste_outgoing.close()
 		
@@ -327,7 +269,9 @@ def parser(item):
 def phosphates():
 	pass
 
-#derived from primmm at https://github.com/dsprimm/Final_capstone
+#found in coordination with Primm at
+#https://github.com/dsprimm/Final_capstone/blob/master/debris.py
+#***
 def clean_debris(p_list):
 	list_len = len(p_list)
 	ret_list = []
@@ -357,7 +301,11 @@ def debris(p_list):
 			p_list = clean_debris(p_list)
 			return p_list
 	return 0
+#***
 
+#found in coordination with Primm at
+#https://github.com/dsprimm/Final_capstone/blob/master/mercury.py
+#***
 def mercury(p_list, bucket):
 	double_l = []
 	for mol in p_list:
@@ -374,7 +322,6 @@ def mercury(p_list, bucket):
 		return double_l
 	return double_l
 
-#found with help from Primm
 def merc_check(double_l, bucket):
 	dic = {}
 	m_set = set()
@@ -391,10 +338,10 @@ def merc_check(double_l, bucket):
 			point += 1
 	if point > 1:
 		print("Found merc")
-		clean(double_l, dic, m_set, bucket)
+		clean_merc(double_l, dic, m_set, bucket)
 	return point
 
-def clean(double_l, dic, m_set, bucket):
+def clean_merc(double_l, dic, m_set, bucket):
 	small = 0
 	trash = None
 	for i in dic:
@@ -409,8 +356,11 @@ def clean(double_l, dic, m_set, bucket):
 				trash = i
 	bucket.add_waste(str(double_l[trash][2]))
 	double_l[trash] = (0,0,0)
+#***
 
-#found with help from Primm
+#found in coordination with Primm at
+#https://github.com/dsprimm/Final_capstone/blob/master/selenium.py
+#***
 def selenium(p_list, bucket):
 	double_l = [('')]
 	s_child = 0
@@ -445,7 +395,6 @@ def selenium(p_list, bucket):
 		p_list = clean_dbl(m_dict, bucket)
 		return p_list		
 
-#found with help from Primm
 def clean_dbl(double_l, bucket):
 	print("Cleaning double l")
 	big = 0
@@ -458,7 +407,6 @@ def clean_dbl(double_l, bucket):
 	for i in double_l:
 		if not last:
 			last = i
-		#print(last)
 		if i in double_l[[i][0]] and i in double_l[[i][1]]:
 			pass
 		else:
@@ -487,7 +435,6 @@ def clean_dbl(double_l, bucket):
 		send_list.append((item[0], item[1], item[2]))
 	return send_list
 
-#found with help from Primm
 def clean_chain(double_l, bucket):
 	print("Cleaning chain")
 	last = 0
@@ -506,7 +453,6 @@ def clean_chain(double_l, bucket):
 			if double_l[i][0] not in double_l.keys():
 				return 0
 	for i in double_l:
-		#print(i, trash, double_l[i])
 		if i == trash:
 			ret_list.append((double_l[i][0], double_l[i][1], 0))
 		elif trash == double_l[i][0]:
@@ -523,6 +469,7 @@ def clean_chain(double_l, bucket):
 	for item in ret_list:
 		send_list.append((item[0], item[1], item[2]))
 	return send_list
+#***
 
 def feces(p_list, bucket):
 	ret_list = []
@@ -566,6 +513,9 @@ def ammonia(p_list, bucket):
 	else:
 		return 0
 
+#found in coordination with Primm at
+#https://github.com/dsprimm/Final_capstone/blob/master/deaeration.py
+#***
 def deaeration(p_list):
 	dll = []
 	for mol in p_list:
@@ -610,13 +560,9 @@ def clean_all_zero(d_list):
 		if d_list[i][1] >= remove:
 			d_list[i] = (d_list[i][0], d_list[i][1]-1,d_list[i][2])
 	d_list.pop(remove)
+#***
 	
 def chlorinate(bucket):
-        #for i in bucket[1:5]:
-                #bucket.remove(i)       
-
-        #print(bucket)
-
         for mol in bucket[1:5]:
                 left = mol[0]
                 right = mol[1]
@@ -632,23 +578,10 @@ def chlorinate(bucket):
         for i in bucket[1:5]:
                 bucket.remove(i)
 
-        #print(bucket)
-
         return bucket
 	
 #found at hubpages.com/education/How-to-Tell-If-a-Number-is-Triangular
 def is_triangle(num):
-        """
-        if num == 0:
-                return False
-        num = num * 2
-        n = int(math.sqrt(num))
-        if n ** 2 + n == num:
-                return True
-        elif (n+1) ** 2 + (n+1) == num:
-                return True
-        return False
-        """
         if num == 0:
                 return False
 
