@@ -733,7 +733,7 @@ def lead(p_list, bucket):
 		right = mol[1]
 		data = mol[2]
 		if is_triangle(data):
-			#print("Lead found")
+			print("Lead found")
 			bucket.add_waste(str(data))
 			data = 0
 			lead = 1
