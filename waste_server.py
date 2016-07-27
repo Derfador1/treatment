@@ -38,17 +38,18 @@ def waste(data):
 		#header = Header(4, 8+len(listo)*8, 0)
 		#outgoing.send(header.serialize())
 		h1 = b''
+		header = Header(4, 8+len(listo)*8, 0)
+		h1 += header.serialize()
 		for i in listo:
 			i = int(i)
 			h1 += struct.pack("!LL", i, 0)
 		print("Header {}".format(h1))
 		not_sent = 1
-		header = Header(4, 8+len(listo)*8, 0)
 		while not_sent:
 			try:
 				outgoing.connect(("downstream", 8888))
 				#header = Header(4, 8+len(listo)*8, 0)
-				outgoing.send(header.serialize())
+				#outgoing.send(header.serialize())
 				outgoing.send(h1)
 				not_sent = 0
 			except Exception:
