@@ -178,15 +178,28 @@ def parser(item):
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 			h2 = b''
+
+			print("Before lead check {}".format(p_l))
+
+			debris_l = functions["9"](p_l, bucket)
+
+			if debris_l:
+				print("Cleaned debris of lead")
+				p_l = debris_l
+			else:
+				print("No lead in debris")
+
+			header = Header(1, 8+8*len(p_l), 0)
+			h2 += header.serialize()
+
 			for i in p_l:
 				h2 += struct.pack("!LHH", i[2], i[0], i[1])
-
 			not_sent = 1
 			while not_sent:
 				try:
 					outgoing.connect(("downstream", 2222))
-					header = Header(1, 8 + 8*len(p_l), 0)
-					outgoing.send(header.serialize())
+					#header = Header(1, 8 + 8*len(p_l), 0)
+					#outgoing.send(header.serialize())
 					outgoing.send(h2)
 					not_sent = 0
 					print("Debris sent")
@@ -241,9 +254,14 @@ def parser(item):
 			if i[2]:
 				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
-		if len(water_bucket) > 95:
+		if len(water_bucket) > 190:
 			print("Water sending")			
 			water = functions["8"](water_bucket)
+
+			print("After chlorination {}".format(water))
+
+			header = Header(-, 8+8*len(linker), 0)
+			h1 += header.serialize()
 
 			for i in water:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
@@ -253,8 +271,8 @@ def parser(item):
 				try:
 					water_outgoing.connect(("downstream", 1111))
 					header = Header(0, 8 + 8*len(linker), 0)
-					water_outgoing.send(header.serialize())
-					water_outgoing.send(h1)
+					#water_outgoing.send(header.serialize())
+					#water_outgoing.send(h1)
 					not_sent = 0
 					water_bucket[:] = []
 					print("Water sent correctly")
@@ -563,19 +581,25 @@ def clean_all_zero(d_list):
 #***
 	
 def chlorinate(bucket):
-        for mol in bucket[1:5]:
+        for mol in bucket[0:8]:
                 left = mol[0]
                 right = mol[1]
                 data = mol[2]
 
-                if data:
-                        right = left
-                else:
-                        left = right
+                #if data:
+                #       right = left
+                #else:
+                #        left = right
 
+
+                left = 1
+                right = 1
                 bucket.append((left, right, data))
 
-        for i in bucket[1:5]:
+        bucket.append((0,0,0))
+        bucket.append((0,0,0))
+
+        for i in bucket[0:8]:
                 bucket.remove(i)
 
         return bucket
