@@ -264,17 +264,18 @@ def parser(item):
 			water = functions["9"](water_bucket)
 
 			#print("After chlorination {}".format(water))
-			
+			header = Header(0, 8+8*len(linker), 0)
+			h1 += header.serialize()		
 			for i in water:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
+			print("Header {}".format(h1))
 			not_sent = 1
 			water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			header = Header(0, 8+8*len(linker), 0)
 			while not_sent:
 				try:
 					water_outgoing.connect(("downstream", 1111))
 					#header = Header(0, 8 + 8*len(linker), 0)
-					water_outgoing.send(header.serialize())
+					#water_outgoing.send(header.serialize())
 					water_outgoing.send(h1)
 					not_sent = 0
 					water_bucket[:] = []
