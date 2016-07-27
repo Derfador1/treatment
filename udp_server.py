@@ -260,7 +260,7 @@ def parser(item):
 
 			print("After chlorination {}".format(water))
 
-			header = Header(-, 8+8*len(linker), 0)
+			header = Header(0, 8+8*len(linker), 0)
 			h1 += header.serialize()
 
 			for i in water:
