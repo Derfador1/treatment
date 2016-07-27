@@ -194,7 +194,10 @@ def parser(item):
 				p_l = debris_l
 			else:
 				print("No lead found")
-				
+			
+			header = Header(1, 8+8*len(p_l), 0)
+			h2 += header.serialize()
+	
 			for i in p_l:
 				h2 += struct.pack("!LHH", i[2], i[0], i[1])
 
@@ -202,8 +205,8 @@ def parser(item):
 			while not_sent:
 				try:
 					outgoing.connect(("downstream", 2222))
-					header = Header(1, 8 + 8*len(p_l), 0)
-					outgoing.send(header.serialize())
+					#header = Header(1, 8 + 8*len(p_l), 0)
+					#outgoing.send(header.serialize())
 					outgoing.send(h2)
 					not_sent = 0
 					print("Debris sent")
@@ -265,10 +268,11 @@ def parser(item):
 
 			#print("After chlorination {}".format(water))
 			header = Header(0, 8+8*len(linker), 0)
-			h1 += header.serialize()		
+			h1 += header.serialize()
+			#print("Header {}".format(h1))		
 			for i in water:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
-			print("Header {}".format(h1))
+			#print("Header {}".format(h1))
 			not_sent = 1
 			water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			while not_sent:
