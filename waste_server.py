@@ -40,10 +40,11 @@ def waste(data):
 		h1 = b''
 		header = Header(4, 8+len(listo)*8, 0)
 		h1 += header.serialize()
+		print("Header {}".format(h1))
 		for i in listo:
 			i = int(i)
 			h1 += struct.pack("!LL", i, 0)
-		print("Header {}".format(h1))
+		#print("Header {}".format(h1))
 		not_sent = 1
 		while not_sent:
 			try:
