@@ -75,9 +75,10 @@ def molecules(packet):
 	molecules = [""]
 	while pull < len(packet):
 		(data, left, right) = struct.unpack("!LHH", packet[pull:pull+8])
+		#print((data, left, right))
 		molecules.append((left, right, data))
 		pull += 8
-	
+	#print("Molecules {}".format(molecules))
 	ret_list = generate_mols(molecules)
 	return ret_list
 
@@ -93,6 +94,7 @@ def generate_mols(molecules):
 			elif x + 1 > len(molecules):
 				break
 			if molecules[x][0] or molecules[x][1]:
+				#print("Xo {}, X1 {}".format(molecules[x][0], molecules[x][1]))
 				md[x] = (molecules[x][0], molecules[x][1])
 				break
 			else:
@@ -106,11 +108,12 @@ def generate_mols(molecules):
 	ret_list = []
 	i_list = [(0,0,0) for x in range(len(molecules))]
 	added = 0
+	#print("I_list: {}, M_list {}".format(i_list, m_list))
 	for i in m_list:
 		if i:
 			added = 1
 			i_list[i] = molecules[i]
-			if molecules[i][0] > len(i_list) or molecules[i][1] > len(i_list):
+			if molecules[i][0] > len(molecules)-1 or molecules[i][1] > len(molecules)-1:
 				i_list[0] = 1
 		else:
 			if added:
@@ -121,6 +124,7 @@ def generate_mols(molecules):
 	
 def conversion(md, a):
 	i = 1
+	#print("Md {}".format(md))
 	while True:
 		if i > len(a) - 1:
 			return
@@ -169,6 +173,10 @@ def parser(item):
 	p_l = []
 
 	mol = molecules(item)
+
+	#mol = set(mol)
+
+	#print("mol {}".format(mol))
 
 	linker = []
 
@@ -228,6 +236,8 @@ def parser(item):
 		if p_l:
 			link = p_l
 
+		#print("Link {}".format(link))
+
 		if link:
 			linker = link
 		
@@ -249,9 +259,11 @@ def parser(item):
 			if i[2]:
 				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
-		if len(water_bucket) > 95:
+		if len(water_bucket) > 190:
 			print("Water sending")
 			water = functions["9"](water_bucket)
+
+			#print("After chlorination {}".format(water))
 			
 			for i in water:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
@@ -608,19 +620,26 @@ def lead(p_list, bucket):
 		return 0
 
 def chlorinate(bucket):
-	for mol in bucket[1:5]:
+	print("This is bucket {}".format(bucket))
+	for mol in bucket[0:8]:
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
-		
-		if data:
+		"""
+		if left:
 			right = left
 		else:
 			left = right
-			
+		"""
+		left = 1
+		right = 1
+	
 		bucket.append((left, right, data))
 
-	for i in bucket[1:5]:
+	bucket.append((0,0,0))
+	bucket.append((0,0,0))
+
+	for i in bucket[0:8]:
 		bucket.remove(i)
 
 	return bucket
