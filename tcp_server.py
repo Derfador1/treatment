@@ -269,10 +269,11 @@ def parser(item):
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
 			not_sent = 1
 			water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			header = Header(0, 8+8*len(linker), 0)
 			while not_sent:
 				try:
 					water_outgoing.connect(("downstream", 1111))
-					header = Header(0, 8 + 8*len(linker), 0)
+					#header = Header(0, 8 + 8*len(linker), 0)
 					water_outgoing.send(header.serialize())
 					water_outgoing.send(h1)
 					not_sent = 0
@@ -620,7 +621,8 @@ def lead(p_list, bucket):
 		return 0
 
 def chlorinate(bucket):
-	print("This is bucket {}".format(bucket))
+	#print("This is bucket {}".format(bucket))
+
 	for mol in bucket[0:8]:
 		left = mol[0]
 		right = mol[1]
@@ -641,6 +643,8 @@ def chlorinate(bucket):
 
 	for i in bucket[0:8]:
 		bucket.remove(i)
+
+	print("This is bucket after cleaning {}".format(bucket))
 
 	return bucket
 
