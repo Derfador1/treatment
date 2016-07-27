@@ -30,16 +30,20 @@ def sludger(data):
 		#header = Header(2, 8 + len(list1)*64, 0)
 		#outgoing.send(header.serialize())
 		h1 = b''
+		header = Header(2, 8 + len(list1)*64, 0)
+		h1 += header.serialize()
+		print("Header {}".format(h1))
 		for i in list1:
 			i = str(i)
 			salt  = "I Hate Liam Echlin"
 			h1 += scrypt.hash(i, salt, N = 2048, r = 4, p = 4)
+		#print("Header list {}".format(h1))
 		not_sent = 1
 		while not_sent:
 			try:
 				outgoing.connect(("downstream", 4444))
-				header = Header(2, 8 + len(list1)*64, 0)
-				outgoing.send(header.serialize())
+				#header = Header(2, 8 + len(list1)*64, 0)
+				#outgoing.send(header.serialize())
 				outgoing.send(h1)
 				not_sent = 0
 			except Exception:
