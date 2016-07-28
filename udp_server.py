@@ -254,7 +254,7 @@ def parser(item):
 			if i[2]:
 				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
-		if len(water_bucket) > 190:
+		if len(water_bucket) > 200:
 			print("Water sending")			
 			water = functions["8"](water_bucket)
 
