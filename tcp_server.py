@@ -266,7 +266,7 @@ def parser(item):
 			if i[2]:
 				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
-		if len(water_bucket) > 190:
+		if len(water_bucket) > 10:
 			print("Water sending")
 			water = functions["9"](water_bucket)
 
@@ -647,9 +647,13 @@ def bacteria(p_list, bucket):
 	ret_list = []
 	bac = 0
 	for mol in p_list:
-		left = mol[0]
-		right = mol[1]
-		data = mol = [2]
+		try:
+		#print("Mol {}".format(mol))
+			left = mol[0]
+			right = mol[1]
+			data = mol[2]
+		except Exception:
+			print("Mol {}".format(mol))
 		if is_fib(data):
 			print("Fungus/Bacteria fund")
 			bucket.add_waste(str(data))
@@ -666,7 +670,7 @@ def bacteria(p_list, bucket):
 
 def chlorinate(bucket):
 	#print("This is bucket {}".format(bucket))
-
+	number = len(bucket)-9
 	for mol in bucket[0:8]:
 		left = mol[0]
 		right = mol[1]
@@ -677,10 +681,12 @@ def chlorinate(bucket):
 		else:
 			left = right
 		"""
-		left = 1
-		right = 1
+		left = number
+		right = number
 	
 		bucket.append((left, right, data))
+
+		number += 1	
 
 	bucket.append((0,0,0))
 	bucket.append((0,0,0))
