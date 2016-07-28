@@ -198,7 +198,7 @@ def parser(item):
 				p_l = debris_l
 			else:
 				print("No lead found")
-			print("Len of p_l {}".format(len(p_l)))	
+			print("Len of p_l {} : p_l {}".format(len(p_l), p_l))	
 			header = Header(1, 8+8*len(p_l), 0)
 			h2 += header.serialize()
 	
@@ -266,7 +266,7 @@ def parser(item):
 			if i[2]:
 				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
-		if len(water_bucket) > 195:
+		if len(water_bucket) > 200:
 			print("Water sending")
 			water = functions["9"](water_bucket)
 			#print("Water bucket {}".format(water_bucket))
