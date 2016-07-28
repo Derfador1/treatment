@@ -270,9 +270,9 @@ def parser(item):
 			while not_sent:
 				try:
 					water_outgoing.connect(("downstream", 1111))
-					header = Header(0, 8 + 8*len(linker), 0)
+					#header = Header(0, 8 + 8*len(linker), 0)
 					#water_outgoing.send(header.serialize())
-					#water_outgoing.send(h1)
+					water_outgoing.send(h1)
 					not_sent = 0
 					water_bucket[:] = []
 					print("Water sent correctly")
