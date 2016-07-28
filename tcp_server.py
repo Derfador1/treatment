@@ -647,8 +647,8 @@ def bacteria(p_list, bucket):
 	ret_list = []
 	bac = 0
 	for mol in p_list:
-		if mol == 1:
-			pass
+		if type(mol) == int:
+			continue
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
