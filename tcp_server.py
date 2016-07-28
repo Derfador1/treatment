@@ -164,7 +164,7 @@ def parser(item):
 	waste_outgoing.connect(('', 40003))
 
 
-	functions = {"1": debris, "2": mercury, "3":lead, "4": selenium,
+	functions = {"0": bacteria, "1": debris, "2": mercury, "3":lead, "4": selenium,
 	        "5": feces, "6": ammonia, "7": deaeration, "8": phosphates,
 			"9":chlorinate
 			}
@@ -181,6 +181,10 @@ def parser(item):
 	linker = []
 
 	for link in mol:
+		p_l = functions["0"](link, bucket)
+		if p_l:
+			link = p_l
+
 		p_l = functions["1"](link)
 		if p_l:
 			outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -624,6 +628,41 @@ def lead(p_list, bucket):
 		return ret_list
 	else:
 		return 0
+
+
+
+#found at https://technobeans.wordpress.com/2012/04/16/5-ways-of-fibonacci-in-python/	
+def is_fib(data):
+	if data == 0:
+		return False		
+	a, b = 1,1
+	fib_list = []
+	for i in range(45):
+		a, b = b, a+b
+		if a == data:
+			return True
+	return False
+		
+def bacteria(p_list, bucket):
+	ret_list = []
+	bac = 0
+	for mol in p_list:
+		left = mol[0]
+		right = mol[1]
+		data = mol = [2]
+		if is_fib(data):
+			print("Fungus/Bacteria fund")
+			bucket.add_waste(str(data))
+			data = 0
+			bac = 1
+		else:
+			pass
+	
+	if bac:
+		return ret_list
+	else:
+		return 0		
+
 
 def chlorinate(bucket):
 	#print("This is bucket {}".format(bucket))
