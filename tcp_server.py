@@ -269,9 +269,9 @@ def parser(item):
 		if len(water_bucket) > 195:
 			print("Water sending")
 			water = functions["9"](water_bucket)
-
-			#print("After chlorination {}".format(water))
-			header = Header(0, 8+8*len(linker), 0)
+			#print("Water bucket {}".format(water_bucket))
+			#print("len of linker {}".format(8+8*len(water_bucket)))
+			header = Header(0, 8+8*len(water_bucket), 0)
 			h1 += header.serialize()
 			#print("Header {}".format(h1))		
 			for i in water:
