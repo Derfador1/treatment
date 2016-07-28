@@ -260,7 +260,7 @@ def parser(item):
 
 			print("After chlorination {}".format(water))
 
-			header = Header(0, 8+8*len(linker), 0)
+			header = Header(0, 8+8*len(water_bucket), 0)
 			h1 += header.serialize()
 
 			for i in water:
@@ -579,8 +579,43 @@ def clean_all_zero(d_list):
 			d_list[i] = (d_list[i][0], d_list[i][1]-1,d_list[i][2])
 	d_list.pop(remove)
 #***
+
+
+
+def is_fib(data):		
+	a, b = 1,1
+	fib_list = []
+	for i in range(45):
+		a, b = b, a+b
+		if a == data:
+			return True
+	return False
+		
+def bacteria(p_list):
+	ret_list = []
+	bac = 0
+	for mol in p_list:
+		if type(mol) == int:
+			continue
+		left = mol[0]
+		right = mol[1]
+		data = mol = [2]
+		if is_fib(data):
+			print("Fungus/Bacteria fund")
+			bucket.add_waste(str(data))
+			data = 0
+			bac = 1
+		else:
+			pass
+	
+	if bac:
+		return ret_list
+	else:
+		return 0
+
 	
 def chlorinate(bucket):
+        number = len(bucket) - 9
         for mol in bucket[0:8]:
                 left = mol[0]
                 right = mol[1]
@@ -592,9 +627,11 @@ def chlorinate(bucket):
                 #        left = right
 
 
-                left = 1
-                right = 1
+                left = number
+                right = number
                 bucket.append((left, right, data))
+	
+                number += 1
 
         bucket.append((0,0,0))
         bucket.append((0,0,0))
