@@ -198,7 +198,7 @@ def parser(item):
 				p_l = debris_l
 			else:
 				print("No lead found")
-			
+			print("Len of p_l {}".format(len(p_l)))	
 			header = Header(1, 8+8*len(p_l), 0)
 			h2 += header.serialize()
 	
@@ -647,13 +647,11 @@ def bacteria(p_list, bucket):
 	ret_list = []
 	bac = 0
 	for mol in p_list:
-		try:
-		#print("Mol {}".format(mol))
-			left = mol[0]
-			right = mol[1]
-			data = mol[2]
-		except Exception:
-			print("Mol {}".format(mol))
+		if mol == 1:
+			pass
+		left = mol[0]
+		right = mol[1]
+		data = mol[2]
 		if is_fib(data):
 			print("Fungus/Bacteria fund")
 			bucket.add_waste(str(data))
