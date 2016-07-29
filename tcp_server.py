@@ -269,14 +269,13 @@ def parser(item):
 		if len(water_bucket) > 200:
 			print("Water sending")
 			water = functions["9"](water_bucket)
-			#print("Water bucket {}".format(water_bucket))
-			#print("len of linker {}".format(8+8*len(water_bucket)))
 			header = Header(0, 8+8*len(water_bucket), 0)
 			h1 += header.serialize()
-			#print("Header {}".format(h1))		
-			for i in water:
+			tmp_b = fix_water(water_bucket)
+			
+			for i in tmp_b:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
-			#print("Header {}".format(h1))
+			
 			not_sent = 1
 			water_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			while not_sent:
@@ -298,6 +297,36 @@ def parser(item):
 
 def phosphates():
 	pass
+
+
+def fix_water(bucket):
+	end_numb = len(bucket)-11
+	number = 0
+	ret_list = []
+	#print("Bucket {}".format(bucket))
+	for mol in bucket:
+			left = mol[0]
+			right = mol[1]
+			data = mol[2]
+			
+			#bucket.remove(mol)
+	
+			if number > end_numb:
+				#print("Here")
+				ret_list.append((left, right, data))
+				continue
+
+			if number == 0:
+				left = 0
+				right = number + 1
+			else:
+				left = 0
+				right = number+1
+			
+			number += 1
+
+			ret_list.append((left, right, data))
+	return ret_list
 
 #found in coordination with Primm at
 #https://github.com/dsprimm/Final_capstone/blob/master/debris.py
@@ -692,7 +721,7 @@ def chlorinate(bucket):
 	for i in bucket[0:8]:
 		bucket.remove(i)
 
-	print("This is bucket after cleaning {}".format(bucket))
+	#print("This is bucket after cleaning {}".format(bucket))
 
 	return bucket
 
