@@ -258,7 +258,7 @@ def parser(item):
 			linker = link
 
 	lock.acquire()	
-	if len(sludge_bucket) in range(5, 75):
+	if len(sludge_bucket) in range(50, 75):
 		#print("Bucket before {}".format(sludge_bucket))
 		my_bucket = list(set(sludge_bucket))
 		print("Sending to sludge server {}".format(my_bucket))
