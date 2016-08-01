@@ -261,6 +261,8 @@ def parser(item):
 			header = Header(0, 8+8*len(water_bucket), 0)
 			h1 += header.serialize()
 			tmp_b = fix_water(water_bucket)
+			
+			print("Tmp_b {}".format(tmp_b))
 
 			for i in tmp_b:
 				h1 += struct.pack("!LHH", i[2], i[0], i[1])
