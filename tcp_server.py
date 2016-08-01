@@ -381,6 +381,8 @@ def debris(p_list):
 def mercury(p_list, bucket):
 	double_l = []
 	for mol in p_list:
+		if type(mol) == int:
+			continue
 		left = mol[0]
 		right = mol[1]
 		data = mol[2]
