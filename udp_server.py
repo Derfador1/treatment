@@ -263,6 +263,9 @@ def parser(item):
 		if len(water_bucket) > 200:
 			print("Water sending")			
 			water = functions["8"](water_bucket)
+			
+			if len(water) != len(water_bucket):
+				print("Error")
 
 			header = Header(0, 8+8*len(water_bucket), 0)
 			h1 += header.serialize()
