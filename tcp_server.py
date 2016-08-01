@@ -159,7 +159,7 @@ def worker():
 		q.task_done()
 
 def parser(item):
-	lock = threading.Lock.semaphore()
+	lock = threading.Semaphore()
 	bucket = Bucket()
 	bucket.lock = lock
 	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
