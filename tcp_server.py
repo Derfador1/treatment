@@ -31,10 +31,14 @@ class Bucket:
 		self.lock = None
 	
 	def add(self, data):
+		self.lock.acquire()
 		sludge_bucket.append(data)
+		self.lock.release()
 		
 	def add_waste(self, data):
+		self.lock.acquire()
 		waste_bucket.append(data)
+		self.lock.release()
 
 	def add_water(self, data):
 		self.lock.acquire()
@@ -252,16 +256,20 @@ def parser(item):
 
 		if link:
 			linker = link
-		
+	
+	lock.acquire()	
 	if len(sludge_bucket) in range(50, 75):
 		print("Sending to sludge server")
 		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
 		sludge_bucket[:] = []
-
+	lock.release()
+	
+	lock.acquire()
 	if len(waste_bucket) in range(50, 75):
 		print("Sending to waste server")
 		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
 		waste_bucket[:] = []
+	lock.release()
 
 
 	h1 = b''
