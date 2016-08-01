@@ -256,18 +256,21 @@ def parser(item):
 
 		if link:
 			linker = link
-	
+
 	lock.acquire()	
 	if len(sludge_bucket) in range(50, 75):
-		print("Sending to sludge server")
-		sludge_outgoing.send(bytes(','.join(sludge_bucket),'utf-8'))
+		#print("Bucket before {}".format(sludge_bucket))
+		my_bucket = list(set(sludge_bucket))
+		print("Sending to sludge server {}".format(my_bucket))
+		sludge_outgoing.send(bytes(','.join(my_bucket),'utf-8'))
 		sludge_bucket[:] = []
 	lock.release()
 	
 	lock.acquire()
 	if len(waste_bucket) in range(50, 75):
-		print("Sending to waste server")
-		waste_outgoing.send(bytes(','.join(waste_bucket),'utf-8'))
+		my_bucket1 = list(set(waste_bucket))
+		print("Sending to waste server {}".format(my_bucket1))
+		waste_outgoing.send(bytes(','.join(my_bucket1),'utf-8'))
 		waste_bucket[:] = []
 	lock.release()
 
@@ -560,6 +563,7 @@ def clean_chain(double_l, bucket):
 #***
 
 def feces(p_list, bucket):
+	#print("P_list {}".format(p_list))
 	ret_list = []
 	poo = 0
 	for mol in p_list:
