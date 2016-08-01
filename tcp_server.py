@@ -28,6 +28,7 @@ class Header:
 class Bucket:
 	def __init__(self):
 		self.data = None
+		self.lock = None
 	
 	def add(self, data):
 		sludge_bucket.append(data)
@@ -36,7 +37,9 @@ class Bucket:
 		waste_bucket.append(data)
 
 	def add_water(self, data):
+		self.lock.acquire()
 		water_bucket.append(data)
+		self.lock.release()
 		
 def is_prime(n):
 	if n==2 or n==3: 
@@ -156,7 +159,9 @@ def worker():
 		q.task_done()
 
 def parser(item):
+	lock = threading.Lock.semaphore()
 	bucket = Bucket()
+	bucket.lock = lock
 	sludge_outgoing = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sludge_outgoing.connect(('', 40000))
 	
@@ -266,10 +271,14 @@ def parser(item):
 			if i[2]:
 				bucket.add_water(i)
 		print("Len of water bucket {}".format(len(water_bucket)))
+		lock.acquire()
 		if len(water_bucket) > 200:
 			print("Water sending")
 			water = functions["9"](water_bucket)
 			
+			if len(water) != len(water_bucket):
+				print("Error")
+				
 			header = Header(0, 8+8*len(water_bucket), 0)
 			h1 += header.serialize()
 			tmp_b = fix_water(water_bucket)
@@ -293,6 +302,7 @@ def parser(item):
 				except Exception:
 					continue
 			water_outgoing.close()
+		lock.release()
 		
 	waste_outgoing.close()
 		
@@ -730,7 +740,7 @@ def chlorinate(bucket):
 
 #pulled from https://docs.python.org/3/library/queue.html
 def main():
-	num_worker_threads = 20
+	num_worker_threads = 4
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
