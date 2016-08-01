@@ -677,8 +677,8 @@ def chlorinate(bucket):
                 #        left = right
 
 
-				left = number+2
-				right = number+2
+                left = number+2
+                right = number+2
 				
                 bucket.append((left, right, data))
 	
@@ -728,7 +728,7 @@ def lead(p_list, bucket):
 
 #pulled from https://docs.python.org/3/library/queue.html
 def main():
-	num_worker_threads = 20
+	num_worker_threads = 4
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
