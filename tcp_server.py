@@ -764,7 +764,7 @@ def main():
 			if conn:
 				try:
 					conn.settimeout(5)
-					val = conn.recv(1024)
+					val = conn.recv(4096)
 					recieved.append(val)
 				except socket.timeout:
 					pass
